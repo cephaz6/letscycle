@@ -9,6 +9,25 @@ defaults:
 jobs:
   ci:
     runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: letscycle
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d letscycle"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/letscycle
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,6 +39,12 @@ jobs:
 
       - name: Install
         run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
 
       - name: Lint
         run: npm run lint
