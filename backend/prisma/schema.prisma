@@ -1,11 +1,919 @@
-// Data model lands in build-order step 2 (all 35 tables).
-// This file only establishes the generator and datasource for now.
+// 35 tables across 13 modules — see PRDs/backend-prd.md "Data model".
+// Conventions: camelCase tables (singular) and columns, uuid v4 PKs (DB-generated
+// so raw-SQL inserts work), timestamptz everywhere, string enums, integer pence.
+// geography/tsvector columns are Unsupported — written via raw SQL in repositories.
 
 generator client {
   provider = "prisma-client-js"
 }
 
+// PostGIS extension is created in the init migration SQL (not tracked here —
+// Prisma's extension tracking fights the postgis docker image's preinstalled extras).
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// enums
+// ---------------------------------------------------------------------------
+
+enum AccountStatus {
+  active
+  suspended
+  deleted
+}
+
+enum VerificationType {
+  idDocument
+  phone
+  email
+}
+
+enum VerificationStatus {
+  pending
+  verified
+  failed
+}
+
+enum ListingCondition {
+  new
+  likeNew
+  good
+  fair
+  poor
+}
+
+enum ListingType {
+  sell
+  giveaway
+}
+
+enum ListingStatus {
+  draft
+  active
+  reserved
+  completed
+  expired
+  removed
+}
+
+enum ListingViewSource {
+  search
+  match
+  direct
+  profile
+}
+
+enum ListingTypePreference {
+  sell
+  giveaway
+  both
+}
+
+enum WishlistItemStatus {
+  active
+  paused
+  fulfilled
+  expired
+}
+
+enum MatchCandidateStatus {
+  notified
+  interested
+  expired
+  superseded
+  won
+}
+
+enum MatchEventType {
+  candidatesComputed
+  notificationsSent
+  interestExpressed
+  winnerSelected
+}
+
+enum ConversationStatus {
+  active
+  archived
+}
+
+enum TransactionStatus {
+  initiated
+  paymentAuthorised
+  paymentCaptured
+  inEscrow
+  completed
+  disputed
+  refunded
+  cancelled
+}
+
+enum PayoutOnboardingStatus {
+  pending
+  complete
+  restricted
+}
+
+enum DisputeStatus {
+  open
+  underReview
+  resolvedBuyer
+  resolvedSeller
+  closed
+}
+
+enum TrustEventType {
+  successfulTransaction
+  noShow
+  disputeLost
+  idVerified
+  positiveReview
+  negativeReview
+  flagged
+}
+
+enum FlagTargetType {
+  user
+  listing
+  message
+}
+
+enum FlagStatus {
+  open
+  reviewed
+  actioned
+  dismissed
+}
+
+enum MeetPointCategory {
+  policeStation
+  supermarket
+  library
+  communityCentre
+}
+
+enum NotificationType {
+  matchFound
+  messageReceived
+  transactionUpdate
+  reviewReceived
+  system
+}
+
+enum S3LifecycleStatus {
+  pending
+  confirmed
+  orphaned
+  deleted
+}
+
+enum OutboxStatus {
+  pending
+  published
+  failed
+}
+
+enum JobStatus {
+  pending
+  running
+  succeeded
+  failed
+  retrying
+}
+
+enum WebhookEventStatus {
+  received
+  processed
+  failed
+  duplicate
+}
+
+enum EmailDeliveryStatus {
+  sent
+  delivered
+  bounced
+  complained
+  rejected
+}
+
+// ---------------------------------------------------------------------------
+// users module
+// ---------------------------------------------------------------------------
+
+model User {
+  id                         String                                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                      String                                 @unique
+  phone                      String?
+  displayName                String
+  avatarUrl                  String?
+  homeLocation               Unsupported("geography(Point, 4326)")?
+  homeLocationAccuracyMetres Int?
+  accountStatus              AccountStatus                          @default(active)
+  emailVerifiedAt            DateTime?                              @db.Timestamptz(6)
+  phoneVerifiedAt            DateTime?                              @db.Timestamptz(6)
+  cognitoSub                 String                                 @unique
+  preferences                Json                                   @default("{}")
+  createdAt                  DateTime                               @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime                               @default(now()) @updatedAt @db.Timestamptz(6)
+
+  verifications           UserVerification[]
+  blocksInitiated         BlockedUser[]            @relation("blocker")
+  blocksReceived          BlockedUser[]            @relation("blocked")
+  refreshTokens           RefreshToken[]
+  listings                Listing[]
+  favourites              Favourite[]
+  listingViews            ListingView[]
+  wishlistItems           WishlistItem[]
+  matchCandidates         MatchCandidate[]
+  conversationsAsBuyer    Conversation[]           @relation("conversationBuyer")
+  conversationsAsSeller   Conversation[]           @relation("conversationSeller")
+  messagesSent            Message[]
+  transactionsAsBuyer     Transaction[]            @relation("transactionBuyer")
+  transactionsAsSeller    Transaction[]            @relation("transactionSeller")
+  transactionEvents       TransactionEvent[]
+  payoutAccount           PayoutAccount?
+  disputesOpened          Dispute[]
+  trustScore              TrustScore?
+  trustEvents             TrustEvent[]
+  reviewsGiven            Review[]                 @relation("reviewer")
+  reviewsReceived         Review[]                 @relation("reviewee")
+  flagsReported           Flag[]
+  safeTransitSessions     SafeTransitSession[]
+  notifications           Notification[]
+  pushSubscriptions       PushSubscription[]
+  notificationPreferences NotificationPreference[]
+  termsAcceptances        TermsAcceptance[]
+  s3Objects               S3Object[]
+  auditLogs               AuditLog[]
+
+  @@map("user")
+}
+
+model UserVerification {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String             @db.Uuid
+  verificationType  VerificationType
+  status            VerificationStatus @default(pending)
+  verifiedAt        DateTime?          @db.Timestamptz(6)
+  providerReference String?
+  createdAt         DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime           @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("userVerification")
+}
+
+model BlockedUser {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  blockerUserId String   @db.Uuid
+  blockedUserId String   @db.Uuid
+  reason        String?
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  blocker User @relation("blocker", fields: [blockerUserId], references: [id])
+  blocked User @relation("blocked", fields: [blockedUserId], references: [id])
+
+  @@unique([blockerUserId, blockedUserId])
+  @@index([blockedUserId])
+  @@map("blockedUser")
+}
+
+// ---------------------------------------------------------------------------
+// auth module
+// ---------------------------------------------------------------------------
+
+model RefreshToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz(6)
+  revokedAt DateTime? @db.Timestamptz(6)
+  userAgent String
+  ipAddress String
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("refreshToken")
+}
+
+// ---------------------------------------------------------------------------
+// listings module
+// ---------------------------------------------------------------------------
+
+model Listing {
+  id                     String                                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sellerId               String                                @db.Uuid
+  title                  String
+  description            String
+  categoryId             String                                @db.Uuid
+  condition              ListingCondition
+  listingType            ListingType
+  pricePence             Int?
+  currency               String                                @default("GBP")
+  location               Unsupported("geography(Point, 4326)")
+  locationAccuracyMetres Int
+  status                 ListingStatus                         @default(draft)
+  deadlineAt             DateTime?                             @db.Timestamptz(6)
+  publishedAt            DateTime?                             @db.Timestamptz(6)
+  expiresAt              DateTime?                             @db.Timestamptz(6)
+  attributes             Json                                  @default("{}")
+  searchText             Unsupported("tsvector")?              @default(dbgenerated("to_tsvector('english'::regconfig, ((title || ' '::text) || description))"))
+  createdAt              DateTime                              @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime                              @default(now()) @updatedAt @db.Timestamptz(6)
+
+  seller          User             @relation(fields: [sellerId], references: [id])
+  category        Category         @relation(fields: [categoryId], references: [id])
+  photos          ListingPhoto[]
+  favourites      Favourite[]
+  views           ListingView[]
+  matchCandidates MatchCandidate[]
+  matchEvents     MatchEvent[]
+  conversations   Conversation[]
+  transactions    Transaction[]
+
+  @@index([sellerId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([location], type: Gist)
+  @@index([searchText], type: Gin)
+  @@map("listing")
+}
+
+model ListingPhoto {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId    String   @db.Uuid
+  s3ObjectId   String   @db.Uuid
+  displayOrder Int
+  width        Int
+  height       Int
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  listing  Listing  @relation(fields: [listingId], references: [id])
+  s3Object S3Object @relation(fields: [s3ObjectId], references: [id])
+
+  @@index([listingId])
+  @@index([s3ObjectId])
+  @@map("listingPhoto")
+}
+
+model Category {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug              String   @unique
+  name              String
+  parentId          String?  @db.Uuid
+  typicalDistanceKm Int
+  iconName          String
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  parent        Category?      @relation("categoryParent", fields: [parentId], references: [id])
+  children      Category[]     @relation("categoryParent")
+  listings      Listing[]
+  wishlistItems WishlistItem[]
+
+  @@index([parentId])
+  @@map("category")
+}
+
+model Favourite {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  listingId String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user    User    @relation(fields: [userId], references: [id])
+  listing Listing @relation(fields: [listingId], references: [id])
+
+  @@unique([userId, listingId])
+  @@index([listingId])
+  @@map("favourite")
+}
+
+model ListingView {
+  id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId    String            @db.Uuid
+  viewerUserId String?           @db.Uuid
+  viewedAt     DateTime          @default(now()) @db.Timestamptz(6)
+  source       ListingViewSource
+  createdAt    DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+
+  listing Listing @relation(fields: [listingId], references: [id])
+  viewer  User?   @relation(fields: [viewerUserId], references: [id])
+
+  @@index([listingId])
+  @@index([viewerUserId])
+  @@map("listingView")
+}
+
+// ---------------------------------------------------------------------------
+// wishlists module
+// ---------------------------------------------------------------------------
+
+model WishlistItem {
+  id                    String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String                   @db.Uuid
+  categoryId            String?                  @db.Uuid
+  keywords              String[]
+  maxPricePence         Int?
+  maxDistanceKm         Int
+  listingTypePreference ListingTypePreference    @default(both)
+  status                WishlistItemStatus       @default(active)
+  searchText            Unsupported("tsvector")? @default(dbgenerated("to_tsvector('english'::regconfig, \"immutableArrayToString\"(keywords, ' '::text))"))
+  expiresAt             DateTime?                @db.Timestamptz(6)
+  fulfilledAt           DateTime?                @db.Timestamptz(6)
+  createdAt             DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime                 @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user            User             @relation(fields: [userId], references: [id])
+  category        Category?        @relation(fields: [categoryId], references: [id])
+  matchCandidates MatchCandidate[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([status])
+  @@map("wishlistItem")
+}
+
+// ---------------------------------------------------------------------------
+// matching module (extractable — event-only integration)
+// ---------------------------------------------------------------------------
+
+model MatchCandidate {
+  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId           String               @db.Uuid
+  wishlistItemId      String               @db.Uuid
+  userId              String               @db.Uuid
+  compositeScore      Float
+  proximityScore      Float
+  keywordScore        Float
+  trustScoreAtMatch   Float
+  urgencyScore        Float
+  rank                Int
+  status              MatchCandidateStatus @default(notified)
+  notifiedAt          DateTime?            @db.Timestamptz(6)
+  expressedInterestAt DateTime?            @db.Timestamptz(6)
+  createdAt           DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime             @default(now()) @updatedAt @db.Timestamptz(6)
+
+  listing      Listing      @relation(fields: [listingId], references: [id])
+  wishlistItem WishlistItem @relation(fields: [wishlistItemId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([listingId])
+  @@index([wishlistItemId])
+  @@index([userId])
+  @@map("matchCandidate")
+}
+
+model MatchEvent {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId String         @db.Uuid
+  eventType MatchEventType
+  payload   Json
+  createdAt DateTime       @default(now()) @db.Timestamptz(6)
+
+  listing Listing @relation(fields: [listingId], references: [id])
+
+  @@index([listingId])
+  @@map("matchEvent")
+}
+
+// ---------------------------------------------------------------------------
+// messaging module
+// ---------------------------------------------------------------------------
+
+model Conversation {
+  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId     String?            @db.Uuid
+  buyerId       String             @db.Uuid
+  sellerId      String             @db.Uuid
+  status        ConversationStatus @default(active)
+  lastMessageAt DateTime?          @db.Timestamptz(6)
+  createdAt     DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime           @default(now()) @updatedAt @db.Timestamptz(6)
+
+  listing  Listing?  @relation(fields: [listingId], references: [id])
+  buyer    User      @relation("conversationBuyer", fields: [buyerId], references: [id])
+  seller   User      @relation("conversationSeller", fields: [sellerId], references: [id])
+  messages Message[]
+
+  @@index([listingId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@map("conversation")
+}
+
+model Message {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String    @db.Uuid
+  senderId       String    @db.Uuid
+  body           String
+  attachments    Json      @default("[]")
+  readAt         DateTime? @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@map("message")
+}
+
+// ---------------------------------------------------------------------------
+// transactions module
+// ---------------------------------------------------------------------------
+
+model Transaction {
+  id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId             String            @db.Uuid
+  buyerId               String            @db.Uuid
+  sellerId              String            @db.Uuid
+  amountPence           Int
+  commissionPence       Int
+  currency              String            @default("GBP")
+  status                TransactionStatus @default(initiated)
+  meetPointId           String?           @db.Uuid
+  agreedPickupAt        DateTime?         @db.Timestamptz(6)
+  completedAt           DateTime?         @db.Timestamptz(6)
+  stripePaymentIntentId String?
+  stripeTransferId      String?
+  createdAt             DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+
+  listing             Listing              @relation(fields: [listingId], references: [id])
+  buyer               User                 @relation("transactionBuyer", fields: [buyerId], references: [id])
+  seller              User                 @relation("transactionSeller", fields: [sellerId], references: [id])
+  meetPoint           MeetPoint?           @relation(fields: [meetPointId], references: [id])
+  events              TransactionEvent[]
+  disputes            Dispute[]
+  reviews             Review[]
+  safeTransitSessions SafeTransitSession[]
+
+  @@index([listingId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([meetPointId])
+  @@map("transaction")
+}
+
+model TransactionEvent {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transactionId String   @db.Uuid
+  eventType     String
+  actorId       String?  @db.Uuid
+  notes         String?
+  payload       Json     @default("{}")
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  actor       User?       @relation(fields: [actorId], references: [id])
+
+  @@index([transactionId])
+  @@index([actorId])
+  @@map("transactionEvent")
+}
+
+model PayoutAccount {
+  id                     String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                 String                 @unique @db.Uuid
+  stripeConnectAccountId String                 @unique
+  onboardingStatus       PayoutOnboardingStatus @default(pending)
+  payoutsEnabled         Boolean                @default(false)
+  createdAt              DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime               @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("payoutAccount")
+}
+
+model Dispute {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transactionId  String        @db.Uuid
+  openedByUserId String        @db.Uuid
+  reason         String
+  description    String
+  status         DisputeStatus @default(open)
+  resolutionNotes String?
+  resolvedAt     DateTime?     @db.Timestamptz(6)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  openedBy    User        @relation(fields: [openedByUserId], references: [id])
+
+  @@index([transactionId])
+  @@index([openedByUserId])
+  @@map("dispute")
+}
+
+// ---------------------------------------------------------------------------
+// trust module
+// ---------------------------------------------------------------------------
+
+model TrustScore {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String   @unique @db.Uuid
+  currentScore     Float
+  scoreComponents  Json     @default("{}")
+  lastCalculatedAt DateTime @db.Timestamptz(6)
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("trustScore")
+}
+
+model TrustEvent {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String         @db.Uuid
+  eventType TrustEventType
+  impact    Float
+  payload   Json           @default("{}")
+  createdAt DateTime       @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("trustEvent")
+}
+
+model Review {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transactionId  String   @db.Uuid
+  reviewerUserId String   @db.Uuid
+  revieweeUserId String   @db.Uuid
+  rating         Int
+  comment        String?
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  reviewer    User        @relation("reviewer", fields: [reviewerUserId], references: [id])
+  reviewee    User        @relation("reviewee", fields: [revieweeUserId], references: [id])
+
+  @@index([transactionId])
+  @@index([reviewerUserId])
+  @@index([revieweeUserId])
+  @@map("review")
+}
+
+model Flag {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  targetType      FlagTargetType
+  targetId        String         @db.Uuid
+  reporterUserId  String         @db.Uuid
+  reason          String
+  description     String?
+  status          FlagStatus     @default(open)
+  resolvedAt      DateTime?      @db.Timestamptz(6)
+  resolutionNotes String?
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
+
+  reporter User @relation(fields: [reporterUserId], references: [id])
+
+  @@index([reporterUserId])
+  @@index([targetType, targetId])
+  @@map("flag")
+}
+
+// ---------------------------------------------------------------------------
+// safety module
+// ---------------------------------------------------------------------------
+
+model MeetPoint {
+  id           String                                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  location     Unsupported("geography(Point, 4326)")
+  address      String
+  category     MeetPointCategory
+  verifiedAt   DateTime?                             @db.Timestamptz(6)
+  openingHours Json                                  @default("{}")
+  notes        String?
+  active       Boolean                               @default(true)
+  createdAt    DateTime                              @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime                              @default(now()) @updatedAt @db.Timestamptz(6)
+
+  transactions Transaction[]
+
+  @@index([location], type: Gist)
+  @@map("meetPoint")
+}
+
+model SafeTransitSession {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transactionId            String    @db.Uuid
+  userId                   String    @db.Uuid
+  startedAt                DateTime  @default(now()) @db.Timestamptz(6)
+  endedAt                  DateTime? @db.Timestamptz(6)
+  liveLocationShareEnabled Boolean   @default(false)
+  trustedContactNotified   Boolean   @default(false)
+  arrivalConfirmedAt       DateTime? @db.Timestamptz(6)
+  duressTriggeredAt        DateTime? @db.Timestamptz(6)
+  createdAt                DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([transactionId])
+  @@index([userId])
+  @@map("safeTransitSession")
+}
+
+// ---------------------------------------------------------------------------
+// notifications module (extractable — event-only integration)
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String           @db.Uuid
+  type              NotificationType
+  payload           Json             @default("{}")
+  readAt            DateTime?        @db.Timestamptz(6)
+  deliveredChannels String[]
+  createdAt         DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("notification")
+}
+
+model PushSubscription {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @db.Uuid
+  endpoint  String    @unique
+  keys      Json
+  userAgent String
+  revokedAt DateTime? @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("pushSubscription")
+}
+
+model NotificationPreference {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String           @db.Uuid
+  notificationType NotificationType
+  channels         String[]
+  createdAt        DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, notificationType])
+  @@map("notificationPreference")
+}
+
+// ---------------------------------------------------------------------------
+// system module
+// ---------------------------------------------------------------------------
+
+model SiteSetting {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key         String   @unique
+  value       Json
+  description String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@map("siteSetting")
+}
+
+model TermsAcceptance {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @db.Uuid
+  termsVersion String
+  acceptedAt   DateTime @default(now()) @db.Timestamptz(6)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, termsVersion])
+  @@map("termsAcceptance")
+}
+
+model S3Object {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bucket          String
+  key             String            @unique
+  contentType     String
+  sizeBytes       Int
+  ownerUserId     String?           @db.Uuid
+  lifecycleStatus S3LifecycleStatus @default(pending)
+  createdAt       DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+
+  owner         User?          @relation(fields: [ownerUserId], references: [id])
+  listingPhotos ListingPhoto[]
+
+  @@index([ownerUserId])
+  @@map("s3Object")
+}
+
+model Outbox {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventType     String
+  payload       Json
+  aggregateType String
+  aggregateId   String       @db.Uuid
+  status        OutboxStatus @default(pending)
+  publishedAt   DateTime?    @db.Timestamptz(6)
+  attempts      Int          @default(0)
+  lastError     String?
+  createdAt     DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([status, createdAt])
+  @@map("outbox")
+}
+
+model AuditLog {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorUserId String?  @db.Uuid
+  action      String
+  targetType  String
+  targetId    String?  @db.Uuid
+  ipAddress   String
+  userAgent   String
+  payload     Json     @default("{}")
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  actor User? @relation(fields: [actorUserId], references: [id])
+
+  @@index([actorUserId])
+  @@map("auditLog")
+}
+
+// ---------------------------------------------------------------------------
+// ops module
+// ---------------------------------------------------------------------------
+
+model Job {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobType     String
+  payload     Json      @default("{}")
+  status      JobStatus @default(pending)
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  nextRunAt   DateTime? @db.Timestamptz(6)
+  lastError   String?
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([status])
+  @@map("job")
+}
+
+// ---------------------------------------------------------------------------
+// external module
+// ---------------------------------------------------------------------------
+
+model ExternalWebhookEvent {
+  id              String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider        String
+  externalEventId String
+  eventType       String
+  payload         Json
+  status          WebhookEventStatus @default(received)
+  processedAt     DateTime?          @db.Timestamptz(6)
+  error           String?
+  createdAt       DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime           @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@unique([provider, externalEventId])
+  @@map("externalWebhookEvent")
+}
+
+model EmailDelivery {
+  id        String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  messageId String              @unique
+  toEmail   String
+  emailType String
+  status    EmailDeliveryStatus @default(sent)
+  payload   Json                @default("{}")
+  createdAt DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime            @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@map("emailDelivery")
 }
