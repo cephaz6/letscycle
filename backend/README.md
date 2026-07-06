@@ -20,4 +20,12 @@ Product and build specs live in [../PRDs/](../PRDs/) — read `general-prd.md`, 
 | `npm run build`     | Compile to `dist/`                       |
 | `npm run migrate`   | Prisma migrate                           |
 
-Copy `.env.example` to `.env` for local config. Secrets are never committed — AWS Secrets Manager only.
+## Local setup
+
+1. Copy `.env.example` to `.env`
+2. `docker compose up -d` — Postgres 16 + PostGIS on `localhost:5432`
+3. `npm install && npx prisma generate`
+4. `npm run migrate` — apply migrations
+5. `npm run dev`
+
+Secrets are never committed — AWS Secrets Manager only.
