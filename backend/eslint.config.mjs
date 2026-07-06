@@ -1,7 +1,25 @@
 // @ts-check
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import importX from 'eslint-plugin-import-x';
 import prettier from 'eslint-config-prettier';
+
+// Keep in sync with src/services/* (backend-prd.md "Modules").
+const modules = [
+  'auth',
+  'users',
+  'listings',
+  'wishlists',
+  'matching',
+  'messaging',
+  'transactions',
+  'trust',
+  'safety',
+  'notifications',
+  'system',
+  'ops',
+  'external',
+];
 
 export default tseslint.config(
   { ignores: ['dist/', 'node_modules/', 'coverage/'] },
@@ -14,30 +32,43 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-  },
-  {
-    // Module boundary rule: nothing outside a module folder may import from
-    // anywhere except that module's index.ts (see backend-prd.md).
-    files: ['src/**/*.ts'],
     rules: {
-      'no-restricted-imports': [
+      '@typescript-eslint/no-unused-vars': [
         'error',
-        {
-          patterns: [
-            {
-              group: ['**/services/*/*', '!**/services/*/index'],
-              message: 'Import modules only through their index.ts public interface.',
-            },
-          ],
-        },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
     },
   },
   {
-    // Inside a module, files import each other freely.
-    files: ['src/services/**/*.ts'],
+    // Module boundary rule: nothing may import a module's internals — only its
+    // index.ts public interface (see backend-prd.md). import-x resolves each
+    // specifier to a real file, so relative paths can't slip through.
+    files: ['src/**/*.ts'],
+    plugins: { 'import-x': importX },
+    settings: {
+      'import-x/resolver': {
+        typescript: { project: './tsconfig.json' },
+      },
+    },
     rules: {
-      'no-restricted-imports': 'off',
+      'import-x/no-restricted-paths': [
+        'error',
+        {
+          basePath: import.meta.dirname,
+          zones: modules.map((mod) => ({
+            target: [
+              './src/api',
+              './src/workers',
+              './src/shared',
+              './src/server.ts',
+              ...modules.filter((m) => m !== mod).map((m) => `./src/services/${m}`),
+            ],
+            from: `./src/services/${mod}`,
+            except: ['index.ts'],
+            message: `Import the ${mod} module only through its index.ts public interface.`,
+          })),
+        },
+      ],
     },
   },
   {
