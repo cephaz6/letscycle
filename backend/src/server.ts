@@ -3,21 +3,34 @@ import { getEnv } from './shared/config/env.js';
 import { getLogger } from './shared/logging/logger.js';
 import { disconnectDb, getDb } from './shared/db/client.js';
 import { getEventBus } from './shared/events/bus.js';
+import { AuthService, createFakeCognito } from './services/auth/index.js';
 import { OutboxPublisher } from './workers/outboxPublisher.js';
 
 const env = getEnv();
 const logger = getLogger();
 const hasDb = Boolean(env.DATABASE_URL);
 
-const app = createApp(
-  hasDb
-    ? {
-        checkDbReady: async () => {
-          await getDb().$queryRaw`SELECT 1`;
-        },
-      }
-    : {},
+// Real Cognito arrives with AWS infrastructure; until then the fake serves
+// dev and CI. Production must never boot against it.
+if (env.NODE_ENV === 'production' && !env.COGNITO_USER_POOL_ID) {
+  throw new Error('COGNITO_USER_POOL_ID is required in production');
+}
+if (env.COGNITO_USER_POOL_ID) {
+  throw new Error('Real Cognito client is not implemented yet (planned with CDK infra)');
+}
+
+const { client: cognitoClient } = createFakeCognito(
+  env.AUTH_DEV_TOKEN_SECRET ?? 'letscycle-local-dev-secret',
 );
+
+const app = createApp({
+  ...(hasDb && {
+    checkDbReady: async () => {
+      await getDb().$queryRaw`SELECT 1`;
+    },
+    authService: new AuthService(cognitoClient),
+  }),
+});
 
 const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT }, 'server listening');
@@ -28,7 +41,7 @@ if (hasDb) {
   publisher = new OutboxPublisher({ db: getDb(), bus: getEventBus(), log: logger });
   publisher.start();
 } else {
-  logger.warn('DATABASE_URL not set — outbox publisher disabled');
+  logger.warn('DATABASE_URL not set — outbox publisher and auth disabled');
 }
 
 function shutdown(signal: string): void {
