@@ -17,8 +17,16 @@ const sellerId = '0be1b8d1-1275-4a51-a68c-04ba01c1e39e';
 
 const silentLog = createLogger({ level: 'silent' });
 
+// Test files share one database, so assertions scope to this file's rows
+// (matched by aggregateId) — tick() drains whatever is pending globally.
 function makeBus(publish = vi.fn().mockResolvedValue(undefined)) {
   return { bus: { subscribe: vi.fn(), publish }, publish };
+}
+
+function callsForRow(publish: ReturnType<typeof vi.fn>, rowId: string): AppEvent[] {
+  return publish.mock.calls
+    .map((call) => call[0] as AppEvent)
+    .filter((event) => event.eventId === rowId);
 }
 
 async function seedPendingRow() {
@@ -49,12 +57,11 @@ describe.skipIf(!hasDb)('OutboxPublisher', () => {
 
     const processed = await publisher.tick();
 
-    expect(processed).toBe(1);
-    expect(publish).toHaveBeenCalledOnce();
-    const event = publish.mock.calls[0]?.[0] as AppEvent;
-    expect(event.eventId).toBe(row.id);
-    expect(event.eventType).toBe('listing.created');
-    expect(event.payload).toEqual({ listingId, sellerId });
+    expect(processed).toBeGreaterThanOrEqual(1);
+    const events = callsForRow(publish, row.id);
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('listing.created');
+    expect(events[0]?.payload).toEqual({ listingId, sellerId });
 
     const updated = await getDb().outbox.findUnique({ where: { id: row.id } });
     expect(updated?.status).toBe('published');
@@ -62,14 +69,14 @@ describe.skipIf(!hasDb)('OutboxPublisher', () => {
   });
 
   it('does not re-deliver already published rows', async () => {
-    await seedPendingRow();
+    const row = await seedPendingRow();
     const { bus, publish } = makeBus();
     const publisher = new OutboxPublisher({ db: getDb(), bus, log: silentLog });
 
     await publisher.tick();
     await publisher.tick();
 
-    expect(publish).toHaveBeenCalledOnce();
+    expect(callsForRow(publish, row.id)).toHaveLength(1);
   });
 
   it('records failures and retries until maxAttempts, then marks failed', async () => {
@@ -113,7 +120,7 @@ describe.skipIf(!hasDb)('OutboxPublisher', () => {
 
     await publisher.tick();
 
-    expect(publish).not.toHaveBeenCalled();
+    expect(callsForRow(publish, row.id)).toHaveLength(0);
     const current = await getDb().outbox.findUnique({ where: { id: row.id } });
     expect(current?.status).toBe('failed');
     expect(current?.lastError).toContain('Unknown event type');
