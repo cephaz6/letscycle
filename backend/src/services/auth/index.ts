@@ -1,5 +1,5 @@
 export { AuthService } from './auth.service.js';
-export { createFakeCognito } from './cognito.fake.js';
+export { createDummyCognito } from './cognito.dummy.js';
 export type {
   AuthSession,
   CognitoClient,

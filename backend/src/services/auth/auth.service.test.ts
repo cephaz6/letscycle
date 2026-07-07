@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { disconnectDb, getDb } from '../../shared/db/client.js';
 import { UnauthorizedError } from '../../shared/errors/httpErrors.js';
 import { AuthService, hashToken } from './auth.service.js';
-import { createFakeCognito } from './cognito.fake.js';
+import { createDummyCognito } from './cognito.dummy.js';
 
 try {
   process.loadEnvFile();
@@ -18,7 +18,7 @@ const password = 'correct-horse-battery';
 const meta = { userAgent: 'vitest', ipAddress: '127.0.0.1' };
 
 describe.skipIf(!hasDb)('AuthService', () => {
-  const { client } = createFakeCognito('test-secret-at-least-16-chars');
+  const { client } = createDummyCognito('test-secret-at-least-16-chars');
   let auth: AuthService;
   let userId: string;
 

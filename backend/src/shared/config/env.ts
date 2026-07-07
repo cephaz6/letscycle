@@ -11,7 +11,7 @@ const envSchema = z.object({
   AWS_REGION: z.string().optional(),
   COGNITO_USER_POOL_ID: z.string().optional(),
   COGNITO_CLIENT_ID: z.string().optional(),
-  // Signs fake-Cognito dev tokens; forbidden in production (server enforces).
+  // Signs dummy-Cognito dev tokens; forbidden in production (server enforces).
   AUTH_DEV_TOKEN_SECRET: z.string().min(16).optional(),
   S3_BUCKET_UPLOADS: z.string().optional(),
   STRIPE_SECRET_KEY_SECRET_ARN: z.string().optional(),
