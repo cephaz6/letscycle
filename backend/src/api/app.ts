@@ -4,6 +4,7 @@ import { createAuthRouter } from './routes/auth.route.js';
 import { createUserRouter } from './routes/user.route.js';
 import { createSystemRouter } from './routes/system.route.js';
 import { createListingRouter } from './routes/listing.route.js';
+import { createWishlistRouter } from './routes/wishlist.route.js';
 import { errorHandler } from './middleware/error.js';
 import type { AuthService, TokenVerifier } from '../services/auth/index.js';
 import type { StorageService } from '../services/system/index.js';
@@ -28,6 +29,7 @@ export function createApp(deps: AppDeps = {}): express.Express {
   }
   if (deps.tokenVerifier) {
     app.use('/api/v1', createUserRouter(deps.tokenVerifier));
+    app.use('/api/v1', createWishlistRouter(deps.tokenVerifier));
   }
   app.use(
     '/api/v1',
