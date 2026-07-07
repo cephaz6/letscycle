@@ -1,2 +1,18 @@
-export { createUser, getUserById, getUserByCognitoSub } from './user.service.js';
-export type { CreateUserInput, UserAccount, UserId } from './user.types.js';
+export {
+  createUser,
+  getUserById,
+  getUserByCognitoSub,
+  getMyProfile,
+  updateMyProfile,
+  getPublicProfile,
+} from './user.service.js';
+export type {
+  CreateUserInput,
+  UserAccount,
+  UserId,
+  MyProfile,
+  PublicProfile,
+  UpdateProfileInput,
+  HomeLocation,
+  UserPreferences,
+} from './user.types.js';

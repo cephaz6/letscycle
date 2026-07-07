@@ -19,7 +19,7 @@ if (env.COGNITO_USER_POOL_ID) {
   throw new Error('Real Cognito client is not implemented yet (planned with CDK infra)');
 }
 
-const { client: cognitoClient } = createFakeCognito(
+const { client: cognitoClient, verifier: tokenVerifier } = createFakeCognito(
   env.AUTH_DEV_TOKEN_SECRET ?? 'letscycle-local-dev-secret',
 );
 
@@ -29,6 +29,7 @@ const app = createApp({
       await getDb().$queryRaw`SELECT 1`;
     },
     authService: new AuthService(cognitoClient),
+    tokenVerifier,
   }),
 });
 
