@@ -3,6 +3,7 @@ import { createHealthRouter, type HealthDeps } from './routes/health.route.js';
 import { createAuthRouter } from './routes/auth.route.js';
 import { createUserRouter } from './routes/user.route.js';
 import { createSystemRouter } from './routes/system.route.js';
+import { createListingRouter } from './routes/listing.route.js';
 import { errorHandler } from './middleware/error.js';
 import type { AuthService, TokenVerifier } from '../services/auth/index.js';
 import type { StorageService } from '../services/system/index.js';
@@ -35,6 +36,15 @@ export function createApp(deps: AppDeps = {}): express.Express {
       ...(deps.storageService && { storageService: deps.storageService }),
     }),
   );
+  if (deps.tokenVerifier && deps.storageService) {
+    app.use(
+      '/api/v1',
+      createListingRouter({
+        tokenVerifier: deps.tokenVerifier,
+        storageService: deps.storageService,
+      }),
+    );
+  }
 
   app.use(errorHandler);
 
