@@ -8,7 +8,7 @@ const ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 // secret) so the auth middleware exercises genuine verification. The real
 // implementation uses Cognito's hosted pool and RS256 JWKS behind the same
 // interfaces. Never used in production — server boot forbids it.
-export function createFakeCognito(secret: string): {
+export function createDummyCognito(secret: string): {
   client: CognitoClient;
   verifier: TokenVerifier;
 } {

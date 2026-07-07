@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import { disconnectDb, getDb } from '../../shared/db/client.js';
-import { createFakeCognito } from '../../services/auth/index.js';
+import { createDummyCognito } from '../../services/auth/index.js';
 import { requireAuth } from './auth.js';
 import { errorHandler } from './error.js';
 
@@ -18,23 +18,23 @@ const runId = randomUUID().slice(0, 8);
 const email = `mw-test-${runId}@example.com`;
 
 describe.skipIf(!hasDb)('requireAuth middleware', () => {
-  const fake = createFakeCognito('test-secret-at-least-16-chars');
-  const otherFake = createFakeCognito('a-completely-different-secret');
+  const dummy = createDummyCognito('test-secret-at-least-16-chars');
+  const otherDummy = createDummyCognito('a-completely-different-secret');
   let app: express.Express;
   let userId: string;
   let accessToken: string;
 
   beforeAll(async () => {
-    const { cognitoSub } = await fake.client.signUp({ email, password: 'pw-123456' });
+    const { cognitoSub } = await dummy.client.signUp({ email, password: 'pw-123456' });
     const user = await getDb().user.create({
       data: { email, displayName: 'MW Tester', cognitoSub },
     });
     userId = user.id;
-    const session = await fake.client.initiateAuth({ email, password: 'pw-123456' });
+    const session = await dummy.client.initiateAuth({ email, password: 'pw-123456' });
     accessToken = session.accessToken;
 
     app = express();
-    app.get('/protected', requireAuth(fake.verifier), (req, res) => {
+    app.get('/protected', requireAuth(dummy.verifier), (req, res) => {
       res.json({ userId: req.user?.id, roles: req.user?.roles });
     });
     app.use(errorHandler);
@@ -52,8 +52,8 @@ describe.skipIf(!hasDb)('requireAuth middleware', () => {
   });
 
   it('rejects tokens signed with the wrong key', async () => {
-    await otherFake.client.signUp({ email: `x-${email}`, password: 'pw-123456' });
-    const bad = await otherFake.client.initiateAuth({
+    await otherDummy.client.signUp({ email: `x-${email}`, password: 'pw-123456' });
+    const bad = await otherDummy.client.initiateAuth({
       email: `x-${email}`,
       password: 'pw-123456',
     });
@@ -67,8 +67,8 @@ describe.skipIf(!hasDb)('requireAuth middleware', () => {
 
   it('rejects valid tokens for users that do not exist', async () => {
     const ghostEmail = `ghost-${email}`;
-    await fake.client.signUp({ email: ghostEmail, password: 'pw-123456' });
-    const ghost = await fake.client.initiateAuth({
+    await dummy.client.signUp({ email: ghostEmail, password: 'pw-123456' });
+    const ghost = await dummy.client.initiateAuth({
       email: ghostEmail,
       password: 'pw-123456',
     });

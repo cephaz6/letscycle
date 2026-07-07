@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../app.js';
 import { disconnectDb, getDb } from '../../shared/db/client.js';
-import { AuthService, createFakeCognito } from '../../services/auth/index.js';
+import { AuthService, createDummyCognito } from '../../services/auth/index.js';
 
 try {
   process.loadEnvFile();
@@ -17,7 +17,7 @@ const email = `auth-api-${runId}@example.com`;
 const password = 'a-strong-password';
 
 describe.skipIf(!hasDb)('auth API', () => {
-  const { client } = createFakeCognito('test-secret-at-least-16-chars');
+  const { client } = createDummyCognito('test-secret-at-least-16-chars');
   let app: ReturnType<typeof createApp>;
   let userId: string;
 
