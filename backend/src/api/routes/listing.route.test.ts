@@ -85,6 +85,9 @@ describe.skipIf(!hasDb)('listings API', () => {
     await db.favourite.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.listingView.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.listingPhoto.deleteMany({ where: { listingId: { in: listingIds } } });
+    // Listings hard-delete only in tests; matching children FK to them.
+    await db.matchCandidate.deleteMany({ where: { listingId: { in: listingIds } } });
+    await db.matchEvent.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.outbox.deleteMany({ where: { aggregateId: { in: listingIds } } });
     await db.listing.deleteMany({ where: { id: { in: listingIds } } });
     await db.refreshToken.deleteMany({

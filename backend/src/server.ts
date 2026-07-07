@@ -5,6 +5,7 @@ import { disconnectDb, getDb } from './shared/db/client.js';
 import { getEventBus } from './shared/events/bus.js';
 import { AuthService, createDummyCognito } from './services/auth/index.js';
 import { StorageService, createDummyStorage } from './services/system/index.js';
+import { registerMatchingHandlers } from './services/matching/index.js';
 import { OutboxPublisher } from './workers/outboxPublisher.js';
 
 const env = getEnv();
@@ -47,7 +48,11 @@ const server = app.listen(env.PORT, () => {
 
 let publisher: OutboxPublisher | undefined;
 if (hasDb) {
-  publisher = new OutboxPublisher({ db: getDb(), bus: getEventBus(), log: logger });
+  const bus = getEventBus();
+  // Extractable modules subscribe here; the outbox publisher drains events to
+  // the bus. In-process today, SNS/SQS after extraction.
+  registerMatchingHandlers(bus);
+  publisher = new OutboxPublisher({ db: getDb(), bus, log: logger });
   publisher.start();
 } else {
   logger.warn('DATABASE_URL not set — outbox publisher and auth disabled');

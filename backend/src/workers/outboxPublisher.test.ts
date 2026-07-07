@@ -42,7 +42,9 @@ async function seedPendingRow() {
 
 describe.skipIf(!hasDb)('OutboxPublisher', () => {
   beforeEach(async () => {
-    await getDb().outbox.deleteMany({ where: { aggregateId } });
+    // tick() drains pending rows globally, so this suite needs full control of
+    // the outbox. Wipe it before each test (transient infra — safe in tests).
+    await getDb().outbox.deleteMany({});
   });
 
   afterAll(async () => {
