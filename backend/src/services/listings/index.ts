@@ -10,7 +10,11 @@ export {
   favouriteListing,
   unfavouriteListing,
 } from './listing.service.js';
-export { seedCategories, listCategories } from './category.service.js';
+export {
+  seedCategories,
+  listCategories,
+  assertCategoryExists,
+} from './category.service.js';
 export type {
   CreateListingInput,
   UpdateListingInput,
