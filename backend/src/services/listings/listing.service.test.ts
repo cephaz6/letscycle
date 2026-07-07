@@ -96,6 +96,9 @@ describe.skipIf(!hasDb)('listings service', () => {
     await db.listingView.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.listingPhoto.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.s3Object.deleteMany({ where: { ownerUserId: { in: [sellerId, otherId] } } });
+    // Listings hard-delete only in tests; matching children FK to them.
+    await db.matchCandidate.deleteMany({ where: { listingId: { in: listingIds } } });
+    await db.matchEvent.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.outbox.deleteMany({ where: { aggregateId: { in: listingIds } } });
     await db.listing.deleteMany({ where: { id: { in: listingIds } } });
     await db.user.deleteMany({ where: { email: { contains: `listings-${runId}` } } });
