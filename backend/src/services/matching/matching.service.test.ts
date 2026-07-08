@@ -110,6 +110,8 @@ describe.skipIf(!hasDb)('matching service', () => {
     const db = getDb();
     await db.matchCandidate.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.matchEvent.deleteMany({ where: { listingId: { in: listingIds } } });
+    // Notifications FK to users; clear any the notification handler produced.
+    await db.notification.deleteMany({ where: { userId: { in: userIds } } });
     await db.wishlistItem.deleteMany({ where: { userId: { in: userIds } } });
     await db.outbox.deleteMany({
       where: { aggregateId: { in: [...listingIds, ...userIds] } },
