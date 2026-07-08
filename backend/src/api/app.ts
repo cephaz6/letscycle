@@ -6,9 +6,11 @@ import { createSystemRouter } from './routes/system.route.js';
 import { createListingRouter } from './routes/listing.route.js';
 import { createWishlistRouter } from './routes/wishlist.route.js';
 import { createMatchRouter } from './routes/match.route.js';
+import { createNotificationRouter } from './routes/notification.route.js';
 import { errorHandler } from './middleware/error.js';
 import type { AuthService, TokenVerifier } from '../services/auth/index.js';
 import type { StorageService } from '../services/system/index.js';
+import type { NotificationService } from '../services/notifications/index.js';
 
 export interface AppDeps extends HealthDeps {
   // Injected so unit tests choose their own dummies and DB wiring.
@@ -16,6 +18,7 @@ export interface AppDeps extends HealthDeps {
   // Required to mount routes behind requireAuth (users, and modules to come).
   tokenVerifier?: TokenVerifier;
   storageService?: StorageService;
+  notificationService?: NotificationService;
 }
 
 export function createApp(deps: AppDeps = {}): express.Express {
@@ -32,6 +35,15 @@ export function createApp(deps: AppDeps = {}): express.Express {
     app.use('/api/v1', createUserRouter(deps.tokenVerifier));
     app.use('/api/v1', createWishlistRouter(deps.tokenVerifier));
     app.use('/api/v1', createMatchRouter(deps.tokenVerifier));
+    if (deps.notificationService) {
+      app.use(
+        '/api/v1',
+        createNotificationRouter({
+          tokenVerifier: deps.tokenVerifier,
+          notificationService: deps.notificationService,
+        }),
+      );
+    }
   }
   app.use(
     '/api/v1',

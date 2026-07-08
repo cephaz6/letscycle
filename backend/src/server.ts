@@ -6,6 +6,11 @@ import { getEventBus } from './shared/events/bus.js';
 import { AuthService, createDummyCognito } from './services/auth/index.js';
 import { StorageService, createDummyStorage } from './services/system/index.js';
 import { registerMatchingHandlers } from './services/matching/index.js';
+import {
+  NotificationService,
+  createDummyPushSender,
+  registerNotificationHandlers,
+} from './services/notifications/index.js';
 import { OutboxPublisher } from './workers/outboxPublisher.js';
 
 const env = getEnv();
@@ -31,6 +36,9 @@ const storageService = new StorageService(
   env.S3_BUCKET_UPLOADS ?? 'letscycle-uploads-dev',
 );
 
+// Real web push (VAPID keys from Secrets Manager) arrives with infrastructure.
+const notificationService = new NotificationService(createDummyPushSender());
+
 const app = createApp({
   ...(hasDb && {
     checkDbReady: async () => {
@@ -39,6 +47,7 @@ const app = createApp({
     authService: new AuthService(cognitoClient),
     tokenVerifier,
     storageService,
+    notificationService,
   }),
 });
 
@@ -52,6 +61,7 @@ if (hasDb) {
   // Extractable modules subscribe here; the outbox publisher drains events to
   // the bus. In-process today, SNS/SQS after extraction.
   registerMatchingHandlers(bus);
+  registerNotificationHandlers(bus, notificationService);
   publisher = new OutboxPublisher({ db: getDb(), bus, log: logger });
   publisher.start();
 } else {
