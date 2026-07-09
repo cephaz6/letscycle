@@ -62,6 +62,15 @@ export class NotificationService {
     return { notified: targets.length };
   }
 
+  // Fan-in for review.submitted: notify the reviewed user.
+  async handleReviewReceived(revieweeUserId: string, reviewId: string): Promise<void> {
+    await this.createAndDeliver({
+      userId: revieweeUserId,
+      type: 'reviewReceived',
+      payload: { reviewId },
+    });
+  }
+
   // Fan-in for transaction.* events: notify the chosen participants.
   async handleTransactionUpdate(
     transactionId: string,
