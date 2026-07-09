@@ -24,4 +24,19 @@ export function registerNotificationHandlers(
       'notifications: message recipient notified',
     );
   });
+
+  // A buyer committing notifies the seller; capture/completion/disputes notify
+  // both parties.
+  bus.subscribe('transaction.initiated', async (event) => {
+    await service.handleTransactionUpdate(event.payload.transactionId, 'seller');
+  });
+  bus.subscribe('transaction.paymentCaptured', async (event) => {
+    await service.handleTransactionUpdate(event.payload.transactionId, 'both');
+  });
+  bus.subscribe('transaction.completed', async (event) => {
+    await service.handleTransactionUpdate(event.payload.transactionId, 'both');
+  });
+  bus.subscribe('transaction.disputed', async (event) => {
+    await service.handleTransactionUpdate(event.payload.transactionId, 'both');
+  });
 }

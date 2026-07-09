@@ -150,6 +150,20 @@ export async function upsertPreference(
   });
 }
 
+export async function getTransactionParticipants(
+  db: Db,
+  transactionId: string,
+): Promise<{ buyerId: string; sellerId: string; status: string } | null> {
+  const rows = await db.$queryRaw<
+    { buyerId: string; sellerId: string; status: string }[]
+  >`
+    SELECT "buyerId", "sellerId", status::text AS status
+    FROM "transaction"
+    WHERE id = ${transactionId}::uuid
+  `;
+  return rows[0] ?? null;
+}
+
 // Resolves a message to its recipient (the participant who did not send it).
 export async function getMessageTarget(
   db: Db,
