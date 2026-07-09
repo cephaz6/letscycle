@@ -7,6 +7,7 @@ import { createListingRouter } from './routes/listing.route.js';
 import { createWishlistRouter } from './routes/wishlist.route.js';
 import { createMatchRouter } from './routes/match.route.js';
 import { createNotificationRouter } from './routes/notification.route.js';
+import { createConversationRouter } from './routes/conversation.route.js';
 import { errorHandler } from './middleware/error.js';
 import type { AuthService, TokenVerifier } from '../services/auth/index.js';
 import type { StorageService } from '../services/system/index.js';
@@ -35,6 +36,7 @@ export function createApp(deps: AppDeps = {}): express.Express {
     app.use('/api/v1', createUserRouter(deps.tokenVerifier));
     app.use('/api/v1', createWishlistRouter(deps.tokenVerifier));
     app.use('/api/v1', createMatchRouter(deps.tokenVerifier));
+    app.use('/api/v1', createConversationRouter(deps.tokenVerifier));
     if (deps.notificationService) {
       app.use(
         '/api/v1',

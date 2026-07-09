@@ -62,6 +62,22 @@ export class NotificationService {
     return { notified: targets.length };
   }
 
+  // Fan-in for message.sent: notify the recipient (the non-sender participant).
+  async handleMessageSent(messageId: string): Promise<{ notified: boolean }> {
+    const target = await repo.getMessageTarget(this.db, messageId);
+    if (!target) return { notified: false };
+    await this.createAndDeliver({
+      userId: target.recipientUserId,
+      type: 'messageReceived',
+      payload: {
+        conversationId: target.conversationId,
+        messageId,
+        senderId: target.senderId,
+      },
+    });
+    return { notified: true };
+  }
+
   // Resolves channels, delivers out-of-band (web push), then persists the
   // notification and emits notification.dispatched atomically.
   async createAndDeliver(input: CreateNotificationInput): Promise<NotificationView> {
