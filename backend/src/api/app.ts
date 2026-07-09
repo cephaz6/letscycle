@@ -8,10 +8,15 @@ import { createWishlistRouter } from './routes/wishlist.route.js';
 import { createMatchRouter } from './routes/match.route.js';
 import { createNotificationRouter } from './routes/notification.route.js';
 import { createConversationRouter } from './routes/conversation.route.js';
+import { createTransactionRouter } from './routes/transaction.route.js';
 import { errorHandler } from './middleware/error.js';
 import type { AuthService, TokenVerifier } from '../services/auth/index.js';
 import type { StorageService } from '../services/system/index.js';
 import type { NotificationService } from '../services/notifications/index.js';
+import type {
+  PayoutService,
+  TransactionService,
+} from '../services/transactions/index.js';
 
 export interface AppDeps extends HealthDeps {
   // Injected so unit tests choose their own dummies and DB wiring.
@@ -20,6 +25,8 @@ export interface AppDeps extends HealthDeps {
   tokenVerifier?: TokenVerifier;
   storageService?: StorageService;
   notificationService?: NotificationService;
+  transactionService?: TransactionService;
+  payoutService?: PayoutService;
 }
 
 export function createApp(deps: AppDeps = {}): express.Express {
@@ -37,6 +44,16 @@ export function createApp(deps: AppDeps = {}): express.Express {
     app.use('/api/v1', createWishlistRouter(deps.tokenVerifier));
     app.use('/api/v1', createMatchRouter(deps.tokenVerifier));
     app.use('/api/v1', createConversationRouter(deps.tokenVerifier));
+    if (deps.transactionService && deps.payoutService) {
+      app.use(
+        '/api/v1',
+        createTransactionRouter({
+          tokenVerifier: deps.tokenVerifier,
+          transactionService: deps.transactionService,
+          payoutService: deps.payoutService,
+        }),
+      );
+    }
     if (deps.notificationService) {
       app.use(
         '/api/v1',
