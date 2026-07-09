@@ -1,0 +1,975 @@
+{
+  "meta": {
+    "version": "1.1.0",
+    "exportedAt": "2026-07-09T16:00:00.000Z",
+    "exportedUsing": "Requestly API Client"
+  },
+  "records": [
+    {
+      "id": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "name": "Letscycle",
+      "description": "LetsCycle API — base URL via {{baseUrl}} (http://localhost:3000/api/v1). Set {{token}} from a login response; protected requests inherit a Bearer auth.",
+      "type": "collection",
+      "parentId": null,
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a0"
+    },
+    {
+      "id": "06e11d22-861e-46dd-95c5-2799ff6c2d97",
+      "name": "Auth",
+      "description": "Signup, login, refresh, logout",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a0"
+    },
+    {
+      "id": "1a2b3c4d-0001-4a01-8a01-000000000001",
+      "name": "Users",
+      "description": "Current-user profile and public profiles",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a1"
+    },
+    {
+      "id": "9f634e22-8fa8-46b4-a001-c18241764631",
+      "name": "System",
+      "description": "Health, public site settings, terms, presigned uploads",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a2"
+    },
+    {
+      "id": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "name": "Listings",
+      "description": "Categories, listing CRUD, search, photos, favourites",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a3"
+    },
+    {
+      "id": "c1e879fc-bbd6-41fb-9801-17d259a3d240",
+      "name": "Wishlist",
+      "description": "Wishlist item CRUD",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a4"
+    },
+    {
+      "id": "d0bd860b-7667-4b65-9ff4-0c94fd58445e",
+      "name": "Matching",
+      "description": "Buyer-facing match candidate actions (matching itself is event-driven)",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a5"
+    },
+    {
+      "id": "be78377f-4365-42cf-98a1-75f96fc59180",
+      "name": "Conversations",
+      "description": "Buyer-seller conversations and messages",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a6"
+    },
+    {
+      "id": "5cf31045-c39b-4a0b-a0ad-e5541e32f9c3",
+      "name": "Notifications",
+      "description": "In-app notifications, push subscriptions, preferences",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a7"
+    },
+
+    {
+      "id": "11110001-0000-4000-8000-000000000001",
+      "name": "signup",
+      "description": "POST /auth/signup",
+      "type": "api",
+      "parentId": "06e11d22-861e-46dd-95c5-2799ff6c2d97",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/auth/signup",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"email\": \"you@example.com\",\n  \"password\": \"atleast8chars\",\n  \"displayName\": \"Cephas\"\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+    {
+      "id": "11110001-0000-4000-8000-000000000002",
+      "name": "login",
+      "description": "POST /auth/login — copy accessToken into {{token}}",
+      "type": "api",
+      "parentId": "06e11d22-861e-46dd-95c5-2799ff6c2d97",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/auth/login",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"email\": \"you@example.com\",\n  \"password\": \"atleast8chars\"\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a1"
+    },
+    {
+      "id": "11110001-0000-4000-8000-000000000003",
+      "name": "refresh",
+      "description": "POST /auth/refresh — rotates the refresh token",
+      "type": "api",
+      "parentId": "06e11d22-861e-46dd-95c5-2799ff6c2d97",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/auth/refresh",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"refreshToken\": \"paste-refresh-token\"\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a2"
+    },
+    {
+      "id": "11110001-0000-4000-8000-000000000004",
+      "name": "logout",
+      "description": "POST /auth/logout — revokes the refresh token",
+      "type": "api",
+      "parentId": "06e11d22-861e-46dd-95c5-2799ff6c2d97",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/auth/logout",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"refreshToken\": \"paste-refresh-token\"\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a3"
+    },
+
+    {
+      "id": "11110002-0000-4000-8000-000000000001",
+      "name": "getMyProfile",
+      "description": "GET /users/me",
+      "type": "api",
+      "parentId": "1a2b3c4d-0001-4a01-8a01-000000000001",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/users/me",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+    {
+      "id": "11110002-0000-4000-8000-000000000002",
+      "name": "updateMyProfile",
+      "description": "PATCH /users/me",
+      "type": "api",
+      "parentId": "1a2b3c4d-0001-4a01-8a01-000000000001",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/users/me",
+          "method": "PATCH",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"displayName\": \"Cephas\",\n  \"homeLocation\": { \"lat\": 53.4084, \"lng\": -2.9916, \"accuracyMetres\": 500 },\n  \"preferences\": { \"defaultDistanceKm\": 15 }\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a1"
+    },
+    {
+      "id": "11110002-0000-4000-8000-000000000003",
+      "name": "getPublicProfile",
+      "description": "GET /users/:userId",
+      "type": "api",
+      "parentId": "1a2b3c4d-0001-4a01-8a01-000000000001",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/users/:userId",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "userId", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a2"
+    },
+
+    {
+      "id": "11110003-0000-4000-8000-000000000001",
+      "name": "health",
+      "description": "GET /health — liveness + DB readiness",
+      "type": "api",
+      "parentId": "9f634e22-8fa8-46b4-a001-c18241764631",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/health",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+    {
+      "id": "11110003-0000-4000-8000-000000000002",
+      "name": "publicSiteSettings",
+      "description": "GET /site-settings/public",
+      "type": "api",
+      "parentId": "9f634e22-8fa8-46b4-a001-c18241764631",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/site-settings/public",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a1"
+    },
+    {
+      "id": "11110003-0000-4000-8000-000000000003",
+      "name": "currentTerms",
+      "description": "GET /terms/current",
+      "type": "api",
+      "parentId": "9f634e22-8fa8-46b4-a001-c18241764631",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/terms/current",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a2"
+    },
+    {
+      "id": "11110003-0000-4000-8000-000000000004",
+      "name": "acceptTerms",
+      "description": "POST /terms/acceptances — records acceptance of the current version",
+      "type": "api",
+      "parentId": "9f634e22-8fa8-46b4-a001-c18241764631",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/terms/acceptances",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a3"
+    },
+    {
+      "id": "11110003-0000-4000-8000-000000000005",
+      "name": "requestUpload",
+      "description": "POST /uploads — presigned upload (purpose: avatar | listingPhoto)",
+      "type": "api",
+      "parentId": "9f634e22-8fa8-46b4-a001-c18241764631",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/uploads",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"purpose\": \"avatar\",\n  \"contentType\": \"image/png\",\n  \"sizeBytes\": 2048\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a4"
+    },
+
+    {
+      "id": "11110004-0000-4000-8000-000000000001",
+      "name": "listCategories",
+      "description": "GET /categories",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/categories",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+    {
+      "id": "11110004-0000-4000-8000-000000000002",
+      "name": "createListing",
+      "description": "POST /listings — set publish:true to go live (emits listing.created)",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/listings",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"title\": \"Vintage oak dining table\",\n  \"description\": \"Solid oak, seats six\",\n  \"categoryId\": \"paste-category-id\",\n  \"condition\": \"good\",\n  \"listingType\": \"sell\",\n  \"pricePence\": 12000,\n  \"location\": { \"lat\": 53.4084, \"lng\": -2.9916, \"accuracyMetres\": 500 },\n  \"publish\": true\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a1"
+    },
+    {
+      "id": "11110004-0000-4000-8000-000000000003",
+      "name": "searchListings",
+      "description": "GET /listings — filters: lat/lng+radiusKm, keyword, categoryId, listingType, min/maxPricePence, sort, limit, offset",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/listings",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [
+            { "key": "lat", "value": "53.4084" },
+            { "key": "lng", "value": "-2.9916" },
+            { "key": "radiusKm", "value": "25" },
+            { "key": "sort", "value": "distance" }
+          ],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a2"
+    },
+    {
+      "id": "11110004-0000-4000-8000-000000000004",
+      "name": "getListing",
+      "description": "GET /listings/:id — records a listingView",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/listings/:id",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a3"
+    },
+    {
+      "id": "11110004-0000-4000-8000-000000000005",
+      "name": "updateListing",
+      "description": "PATCH /listings/:id — owner only",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/listings/:id",
+          "method": "PATCH",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"title\": \"Reduced\",\n  \"pricePence\": 10000\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a4"
+    },
+    {
+      "id": "11110004-0000-4000-8000-000000000006",
+      "name": "deleteListing",
+      "description": "DELETE /listings/:id — owner only, soft delete",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/listings/:id",
+          "method": "DELETE",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a5"
+    },
+    {
+      "id": "11110004-0000-4000-8000-000000000007",
+      "name": "requestPhotoUpload",
+      "description": "POST /listings/:id/photos — presign (step 1 of 2)",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/listings/:id/photos",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"contentType\": \"image/jpeg\",\n  \"sizeBytes\": 40000,\n  \"width\": 800,\n  \"height\": 600,\n  \"displayOrder\": 0\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a6"
+    },
+    {
+      "id": "11110004-0000-4000-8000-000000000008",
+      "name": "confirmPhoto",
+      "description": "POST /listings/:id/photos/:photoId/confirm — confirm (step 2 of 2)",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/listings/:id/photos/:photoId/confirm",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [
+            { "key": "id", "value": "" },
+            { "key": "photoId", "value": "" }
+          ],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a7"
+    },
+    {
+      "id": "11110004-0000-4000-8000-000000000009",
+      "name": "addFavourite",
+      "description": "POST /listings/:id/favourite",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/listings/:id/favourite",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a8"
+    },
+    {
+      "id": "11110004-0000-4000-8000-00000000000a",
+      "name": "removeFavourite",
+      "description": "DELETE /listings/:id/favourite",
+      "type": "api",
+      "parentId": "1ed89bbc-c9ab-4d60-a9c9-8588c9a43d41",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/listings/:id/favourite",
+          "method": "DELETE",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a9"
+    },
+
+    {
+      "id": "11110005-0000-4000-8000-000000000001",
+      "name": "listWishlist",
+      "description": "GET /wishlists",
+      "type": "api",
+      "parentId": "c1e879fc-bbd6-41fb-9801-17d259a3d240",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/wishlists",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+    {
+      "id": "11110005-0000-4000-8000-000000000002",
+      "name": "createWishlistItem",
+      "description": "POST /wishlists",
+      "type": "api",
+      "parentId": "c1e879fc-bbd6-41fb-9801-17d259a3d240",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/wishlists",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"categoryId\": null,\n  \"keywords\": [\"oak\", \"table\"],\n  \"maxPricePence\": 20000,\n  \"maxDistanceKm\": 15,\n  \"listingTypePreference\": \"both\"\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a1"
+    },
+    {
+      "id": "11110005-0000-4000-8000-000000000003",
+      "name": "updateWishlistItem",
+      "description": "PATCH /wishlists/:id — owner only (status: active | paused)",
+      "type": "api",
+      "parentId": "c1e879fc-bbd6-41fb-9801-17d259a3d240",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/wishlists/:id",
+          "method": "PATCH",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"status\": \"paused\",\n  \"maxPricePence\": 15000\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a2"
+    },
+    {
+      "id": "11110005-0000-4000-8000-000000000004",
+      "name": "deleteWishlistItem",
+      "description": "DELETE /wishlists/:id — owner only",
+      "type": "api",
+      "parentId": "c1e879fc-bbd6-41fb-9801-17d259a3d240",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/wishlists/:id",
+          "method": "DELETE",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a3"
+    },
+
+    {
+      "id": "11110006-0000-4000-8000-000000000001",
+      "name": "expressInterest",
+      "description": "POST /matches/:candidateId/interest — the matched buyer taps interested",
+      "type": "api",
+      "parentId": "d0bd860b-7667-4b65-9ff4-0c94fd58445e",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/matches/:candidateId/interest",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "candidateId", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+
+    {
+      "id": "11110007-0000-4000-8000-000000000001",
+      "name": "listConversations",
+      "description": "GET /conversations",
+      "type": "api",
+      "parentId": "be78377f-4365-42cf-98a1-75f96fc59180",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/conversations",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+    {
+      "id": "11110007-0000-4000-8000-000000000002",
+      "name": "startConversation",
+      "description": "POST /conversations — caller is buyer, seller resolved from the listing",
+      "type": "api",
+      "parentId": "be78377f-4365-42cf-98a1-75f96fc59180",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/conversations",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"listingId\": \"paste-listing-id\"\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a1"
+    },
+    {
+      "id": "11110007-0000-4000-8000-000000000003",
+      "name": "getMessages",
+      "description": "GET /conversations/:id/messages — marks the counterpart's messages read",
+      "type": "api",
+      "parentId": "be78377f-4365-42cf-98a1-75f96fc59180",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/conversations/:id/messages",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [
+            { "key": "limit", "value": "30" },
+            { "key": "offset", "value": "0" }
+          ],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a2"
+    },
+    {
+      "id": "11110007-0000-4000-8000-000000000004",
+      "name": "sendMessage",
+      "description": "POST /conversations/:id/messages — emits message.sent",
+      "type": "api",
+      "parentId": "be78377f-4365-42cf-98a1-75f96fc59180",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/conversations/:id/messages",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"body\": \"Is this still available?\",\n  \"attachments\": []\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a3"
+    },
+
+    {
+      "id": "11110008-0000-4000-8000-000000000001",
+      "name": "listNotifications",
+      "description": "GET /notifications — paginated",
+      "type": "api",
+      "parentId": "5cf31045-c39b-4a0b-a0ad-e5541e32f9c3",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/notifications",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [
+            { "key": "limit", "value": "20" },
+            { "key": "offset", "value": "0" }
+          ],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+    {
+      "id": "11110008-0000-4000-8000-000000000002",
+      "name": "markNotificationRead",
+      "description": "PATCH /notifications/:id/read",
+      "type": "api",
+      "parentId": "5cf31045-c39b-4a0b-a0ad-e5541e32f9c3",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/notifications/:id/read",
+          "method": "PATCH",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a1"
+    },
+    {
+      "id": "11110008-0000-4000-8000-000000000003",
+      "name": "subscribePush",
+      "description": "POST /notifications/subscribe — register a web push subscription",
+      "type": "api",
+      "parentId": "5cf31045-c39b-4a0b-a0ad-e5541e32f9c3",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/notifications/subscribe",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"endpoint\": \"https://push.example/abc\",\n  \"keys\": { \"p256dh\": \"...\", \"auth\": \"...\" },\n  \"userAgent\": \"requestly\"\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a2"
+    },
+    {
+      "id": "11110008-0000-4000-8000-000000000004",
+      "name": "getPreferences",
+      "description": "GET /notifications/preferences",
+      "type": "api",
+      "parentId": "5cf31045-c39b-4a0b-a0ad-e5541e32f9c3",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/notifications/preferences",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a3"
+    },
+    {
+      "id": "11110008-0000-4000-8000-000000000005",
+      "name": "updatePreferences",
+      "description": "PATCH /notifications/preferences — channels: inApp | webPush",
+      "type": "api",
+      "parentId": "5cf31045-c39b-4a0b-a0ad-e5541e32f9c3",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/notifications/preferences",
+          "method": "PATCH",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"matchFound\": [\"inApp\", \"webPush\"],\n  \"messageReceived\": [\"inApp\"]\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a4"
+    }
+  ],
+  "environments": [],
+  "packages": []
+}

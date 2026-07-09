@@ -16,4 +16,12 @@ export function registerNotificationHandlers(
       'notifications: match candidates notified',
     );
   });
+
+  bus.subscribe('message.sent', async (event) => {
+    const result = await service.handleMessageSent(event.payload.messageId);
+    getLogger().info(
+      { messageId: event.payload.messageId, ...result },
+      'notifications: message recipient notified',
+    );
+  });
 }

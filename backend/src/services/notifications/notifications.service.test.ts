@@ -256,4 +256,55 @@ describe.skipIf(!hasDb)('notifications service', () => {
     await getDb().outbox.deleteMany({ where: { aggregateId: listingId } });
     await getDb().user.deleteMany({ where: { id: { in: [seller, buyer] } } });
   });
+
+  it('handles message.sent by notifying the recipient (not the sender)', async () => {
+    const sender = await makeUser();
+    const recipient = await makeUser();
+    const conversation = await getDb().conversation.create({
+      data: { buyerId: sender, sellerId: recipient },
+      select: { id: true },
+    });
+    const message = await getDb().message.create({
+      data: { conversationId: conversation.id, senderId: sender, body: 'hi' },
+      select: { id: true },
+    });
+
+    const service = new NotificationService(okSender(), getDb());
+    const bus = new InProcessEventBus(() => {});
+    registerNotificationHandlers(bus, service);
+    const event: AppEvent<'message.sent'> = {
+      eventId: randomUUID(),
+      occurredAt: new Date(),
+      eventType: 'message.sent',
+      aggregateType: 'message',
+      aggregateId: message.id,
+      payload: {
+        messageId: message.id,
+        conversationId: conversation.id,
+        senderId: sender,
+      },
+    };
+    await bus.publish(event);
+
+    const recipientNotifs = await getDb().notification.findMany({
+      where: { userId: recipient, type: 'messageReceived' },
+    });
+    expect(recipientNotifs).toHaveLength(1);
+    expect(recipientNotifs[0]?.payload).toMatchObject({
+      conversationId: conversation.id,
+    });
+
+    const senderNotifs = await getDb().notification.findMany({
+      where: { userId: sender, type: 'messageReceived' },
+    });
+    expect(senderNotifs).toHaveLength(0);
+
+    await getDb().notification.deleteMany({
+      where: { userId: { in: [sender, recipient] } },
+    });
+    await getDb().message.deleteMany({ where: { conversationId: conversation.id } });
+    await getDb().conversation.deleteMany({ where: { id: conversation.id } });
+    await getDb().outbox.deleteMany({ where: { aggregateType: 'notification' } });
+    await getDb().user.deleteMany({ where: { id: { in: [sender, recipient] } } });
+  });
 });

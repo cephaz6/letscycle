@@ -150,6 +150,25 @@ export async function upsertPreference(
   });
 }
 
+// Resolves a message to its recipient (the participant who did not send it).
+export async function getMessageTarget(
+  db: Db,
+  messageId: string,
+): Promise<{ recipientUserId: string; conversationId: string; senderId: string } | null> {
+  const rows = await db.$queryRaw<
+    { recipientUserId: string; conversationId: string; senderId: string }[]
+  >`
+    SELECT
+      CASE WHEN c."buyerId" = m."senderId" THEN c."sellerId" ELSE c."buyerId" END
+        AS "recipientUserId",
+      m."conversationId", m."senderId"
+    FROM "message" m
+    JOIN "conversation" c ON c.id = m."conversationId"
+    WHERE m.id = ${messageId}::uuid
+  `;
+  return rows[0] ?? null;
+}
+
 // Extractable-module read: notifications resolves match candidates to their
 // users/listing directly via SQL rather than importing the matching module.
 export async function getMatchTargets(
