@@ -24,6 +24,25 @@ import type {
 const DEFAULT_COMMISSION_BPS = 500;
 const DEFAULT_HOLD_HOURS = 48;
 
+// Non-guarded read for other modules that react to transaction events (trust,
+// notifications) and need the participants.
+export async function getTransactionParties(
+  transactionId: string,
+  db: PrismaClient = getDb(),
+): Promise<{
+  buyerId: string;
+  sellerId: string;
+  status: TransactionView['status'];
+} | null> {
+  const transaction = await repo.findById(db, transactionId);
+  if (!transaction) return null;
+  return {
+    buyerId: transaction.buyerId,
+    sellerId: transaction.sellerId,
+    status: transaction.status,
+  };
+}
+
 // Disputes and completion are only reachable from these active states.
 const DISPUTABLE: TransactionView['status'][] = [
   'paymentAuthorised',
