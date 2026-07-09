@@ -95,6 +95,16 @@
       "data": { "auth": { "type": "inherit" } },
       "rank": "a7"
     },
+    {
+      "id": "1a2b3c4d-0002-4a02-8a02-000000000002",
+      "name": "Transactions",
+      "description": "Escrow flow (Stripe Connect) and seller payouts",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "a8"
+    },
 
     {
       "id": "11110001-0000-4000-8000-000000000001",
@@ -968,6 +978,191 @@
         "auth": { "type": "inherit" }
       },
       "rank": "a4"
+    },
+
+    {
+      "id": "11110009-0000-4000-8000-000000000001",
+      "name": "onboardPayouts",
+      "description": "POST /payouts/onboard — start Stripe Connect onboarding (seller)",
+      "type": "api",
+      "parentId": "1a2b3c4d-0002-4a02-8a02-000000000002",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/payouts/onboard",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+    {
+      "id": "11110009-0000-4000-8000-000000000002",
+      "name": "payoutStatus",
+      "description": "GET /payouts/status",
+      "type": "api",
+      "parentId": "1a2b3c4d-0002-4a02-8a02-000000000002",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/payouts/status",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a1"
+    },
+    {
+      "id": "11110009-0000-4000-8000-000000000003",
+      "name": "createTransaction",
+      "description": "POST /transactions — buyer commits (emits transaction.initiated)",
+      "type": "api",
+      "parentId": "1a2b3c4d-0002-4a02-8a02-000000000002",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/transactions",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"listingId\": \"paste-listing-id\"\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a2"
+    },
+    {
+      "id": "11110009-0000-4000-8000-000000000004",
+      "name": "myTransactions",
+      "description": "GET /transactions/me",
+      "type": "api",
+      "parentId": "1a2b3c4d-0002-4a02-8a02-000000000002",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/transactions/me",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a3"
+    },
+    {
+      "id": "11110009-0000-4000-8000-000000000005",
+      "name": "getTransaction",
+      "description": "GET /transactions/:id — participant only",
+      "type": "api",
+      "parentId": "1a2b3c4d-0002-4a02-8a02-000000000002",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/transactions/:id",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a4"
+    },
+    {
+      "id": "11110009-0000-4000-8000-000000000006",
+      "name": "confirmTransaction",
+      "description": "POST /transactions/:id/confirm — seller authorises payment",
+      "type": "api",
+      "parentId": "1a2b3c4d-0002-4a02-8a02-000000000002",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/transactions/:id/confirm",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a5"
+    },
+    {
+      "id": "11110009-0000-4000-8000-000000000007",
+      "name": "completeTransaction",
+      "description": "POST /transactions/:id/complete — each party confirms pickup; funds capture on the 2nd",
+      "type": "api",
+      "parentId": "1a2b3c4d-0002-4a02-8a02-000000000002",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/transactions/:id/complete",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a6"
+    },
+    {
+      "id": "11110009-0000-4000-8000-000000000008",
+      "name": "disputeTransaction",
+      "description": "POST /transactions/:id/dispute",
+      "type": "api",
+      "parentId": "1a2b3c4d-0002-4a02-8a02-000000000002",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/transactions/:id/dispute",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"reason\": \"notAsDescribed\",\n  \"description\": \"The item has a broken leg\"\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a7"
     }
   ],
   "environments": [],

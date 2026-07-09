@@ -62,6 +62,31 @@ export class NotificationService {
     return { notified: targets.length };
   }
 
+  // Fan-in for transaction.* events: notify the chosen participants.
+  async handleTransactionUpdate(
+    transactionId: string,
+    audience: 'both' | 'seller' | 'buyer',
+  ): Promise<{ notified: number }> {
+    const parties = await repo.getTransactionParticipants(this.db, transactionId);
+    if (!parties) return { notified: 0 };
+
+    const recipients =
+      audience === 'both'
+        ? [parties.buyerId, parties.sellerId]
+        : audience === 'seller'
+          ? [parties.sellerId]
+          : [parties.buyerId];
+
+    for (const userId of recipients) {
+      await this.createAndDeliver({
+        userId,
+        type: 'transactionUpdate',
+        payload: { transactionId, status: parties.status },
+      });
+    }
+    return { notified: recipients.length };
+  }
+
   // Fan-in for message.sent: notify the recipient (the non-sender participant).
   async handleMessageSent(messageId: string): Promise<{ notified: boolean }> {
     const target = await repo.getMessageTarget(this.db, messageId);

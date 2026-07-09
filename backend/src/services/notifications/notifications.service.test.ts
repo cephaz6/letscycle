@@ -307,4 +307,57 @@ describe.skipIf(!hasDb)('notifications service', () => {
     await getDb().outbox.deleteMany({ where: { aggregateType: 'notification' } });
     await getDb().user.deleteMany({ where: { id: { in: [sender, recipient] } } });
   });
+
+  it('handleTransactionUpdate notifies the chosen audience', async () => {
+    const buyer = await makeUser();
+    const seller = await makeUser();
+    const category = await getDb().category.create({
+      data: {
+        slug: `notif-tx-${randomUUID().slice(0, 6)}`,
+        name: 'c',
+        typicalDistanceKm: 10,
+        iconName: 'x',
+      },
+      select: { id: true },
+    });
+    const listingId = randomUUID();
+    await getDb().$executeRaw`
+      INSERT INTO "listing" ("id","sellerId","title","description","categoryId",
+        condition,"listingType","pricePence",location,"locationAccuracyMetres",status)
+      VALUES (${listingId}::uuid, ${seller}::uuid, 'Tx listing', 'd', ${category.id}::uuid,
+        'good'::"ListingCondition", 'sell'::"ListingType", 1000,
+        ST_SetSRID(ST_MakePoint(-2.99, 53.4), 4326)::geography, 500, 'active'::"ListingStatus")
+    `;
+    const txn = await getDb().transaction.create({
+      data: {
+        listingId,
+        buyerId: buyer,
+        sellerId: seller,
+        amountPence: 1000,
+        commissionPence: 50,
+      },
+      select: { id: true },
+    });
+
+    const service = new NotificationService(okSender(), getDb());
+    await service.handleTransactionUpdate(txn.id, 'seller');
+
+    expect(
+      await getDb().notification.count({
+        where: { userId: seller, type: 'transactionUpdate' },
+      }),
+    ).toBe(1);
+    expect(
+      await getDb().notification.count({
+        where: { userId: buyer, type: 'transactionUpdate' },
+      }),
+    ).toBe(0);
+
+    await getDb().notification.deleteMany({ where: { userId: { in: [buyer, seller] } } });
+    await getDb().transaction.deleteMany({ where: { id: txn.id } });
+    await getDb().listing.deleteMany({ where: { id: listingId } });
+    await getDb().category.deleteMany({ where: { id: category.id } });
+    await getDb().outbox.deleteMany({ where: { aggregateType: 'notification' } });
+    await getDb().user.deleteMany({ where: { id: { in: [buyer, seller] } } });
+  });
 });

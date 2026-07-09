@@ -11,6 +11,11 @@ import {
   createDummyPushSender,
   registerNotificationHandlers,
 } from './services/notifications/index.js';
+import {
+  PayoutService,
+  TransactionService,
+  createDummyPaymentGateway,
+} from './services/transactions/index.js';
 import { OutboxPublisher } from './workers/outboxPublisher.js';
 
 const env = getEnv();
@@ -39,6 +44,12 @@ const storageService = new StorageService(
 // Real web push (VAPID keys from Secrets Manager) arrives with infrastructure.
 const notificationService = new NotificationService(createDummyPushSender());
 
+// Real Stripe Connect arrives with AWS infrastructure; the dummy gateway serves
+// dev and CI (mints synthetic ids, moves no money).
+const paymentGateway = createDummyPaymentGateway();
+const transactionService = new TransactionService(paymentGateway);
+const payoutService = new PayoutService(paymentGateway);
+
 const app = createApp({
   ...(hasDb && {
     checkDbReady: async () => {
@@ -48,6 +59,8 @@ const app = createApp({
     tokenVerifier,
     storageService,
     notificationService,
+    transactionService,
+    payoutService,
   }),
 });
 
