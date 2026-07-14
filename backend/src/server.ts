@@ -62,6 +62,7 @@ const app = createApp({
     notificationService,
     transactionService,
     payoutService,
+    enableRateLimit: true,
   }),
 });
 
