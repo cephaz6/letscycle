@@ -39,6 +39,14 @@ function isChannel(value: string): value is Channel {
   return (ALL_CHANNELS as string[]).includes(value);
 }
 
+// Revokes a user's push subscriptions (e.g. on account deletion).
+export async function revokeAllPushSubscriptions(
+  userId: string,
+  db: PrismaClient = getDb(),
+): Promise<void> {
+  await repo.revokeAllForUser(db, userId);
+}
+
 export class NotificationService {
   constructor(
     private readonly pushSender: PushSender,
@@ -60,6 +68,15 @@ export class NotificationService {
       });
     }
     return { notified: targets.length };
+  }
+
+  // Fan-in for review.submitted: notify the reviewed user.
+  async handleReviewReceived(revieweeUserId: string, reviewId: string): Promise<void> {
+    await this.createAndDeliver({
+      userId: revieweeUserId,
+      type: 'reviewReceived',
+      payload: { reviewId },
+    });
   }
 
   // Fan-in for transaction.* events: notify the chosen participants.

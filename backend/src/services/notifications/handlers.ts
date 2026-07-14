@@ -39,4 +39,11 @@ export function registerNotificationHandlers(
   bus.subscribe('transaction.disputed', async (event) => {
     await service.handleTransactionUpdate(event.payload.transactionId, 'both');
   });
+
+  bus.subscribe('review.submitted', async (event) => {
+    await service.handleReviewReceived(
+      event.payload.revieweeUserId,
+      event.payload.reviewId,
+    );
+  });
 }

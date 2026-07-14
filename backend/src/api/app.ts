@@ -9,6 +9,8 @@ import { createMatchRouter } from './routes/match.route.js';
 import { createNotificationRouter } from './routes/notification.route.js';
 import { createConversationRouter } from './routes/conversation.route.js';
 import { createTransactionRouter } from './routes/transaction.route.js';
+import { createTrustRouter } from './routes/trust.route.js';
+import { applySecurity } from './middleware/security.js';
 import { errorHandler } from './middleware/error.js';
 import type { AuthService, TokenVerifier } from '../services/auth/index.js';
 import type { StorageService } from '../services/system/index.js';
@@ -27,12 +29,15 @@ export interface AppDeps extends HealthDeps {
   notificationService?: NotificationService;
   transactionService?: TransactionService;
   payoutService?: PayoutService;
+  // The server enables rate limiting; tests leave it off.
+  enableRateLimit?: boolean;
 }
 
 export function createApp(deps: AppDeps = {}): express.Express {
   const app = express();
 
   app.disable('x-powered-by');
+  applySecurity(app, { enableRateLimit: deps.enableRateLimit ?? false });
   app.use(express.json());
 
   app.use('/api/v1', createHealthRouter(deps));
@@ -44,6 +49,7 @@ export function createApp(deps: AppDeps = {}): express.Express {
     app.use('/api/v1', createWishlistRouter(deps.tokenVerifier));
     app.use('/api/v1', createMatchRouter(deps.tokenVerifier));
     app.use('/api/v1', createConversationRouter(deps.tokenVerifier));
+    app.use('/api/v1', createTrustRouter(deps.tokenVerifier));
     if (deps.transactionService && deps.payoutService) {
       app.use(
         '/api/v1',

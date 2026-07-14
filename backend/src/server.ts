@@ -16,6 +16,7 @@ import {
   TransactionService,
   createDummyPaymentGateway,
 } from './services/transactions/index.js';
+import { registerTrustHandlers } from './services/trust/index.js';
 import { OutboxPublisher } from './workers/outboxPublisher.js';
 
 const env = getEnv();
@@ -61,6 +62,7 @@ const app = createApp({
     notificationService,
     transactionService,
     payoutService,
+    enableRateLimit: true,
   }),
 });
 
@@ -75,6 +77,7 @@ if (hasDb) {
   // the bus. In-process today, SNS/SQS after extraction.
   registerMatchingHandlers(bus);
   registerNotificationHandlers(bus, notificationService);
+  registerTrustHandlers(bus);
   publisher = new OutboxPublisher({ db: getDb(), bus, log: logger });
   publisher.start();
 } else {

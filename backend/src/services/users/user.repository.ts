@@ -37,6 +37,28 @@ export async function findByEmail(db: Db, email: string): Promise<UserAccount | 
   return db.user.findUnique({ where: { email }, select: accountSelect });
 }
 
+// GDPR erasure: overwrite personal data and mark the account deleted. Keeps
+// the row (foreign keys from transactions/reviews the counterparty still needs)
+// but strips all PII. email/cognitoSub are set to unique tombstones.
+export async function anonymise(tx: Tx, id: string): Promise<void> {
+  await tx.user.update({
+    where: { id },
+    data: {
+      email: `deleted-${id}@deleted.invalid`,
+      cognitoSub: `deleted-${id}`,
+      phone: null,
+      displayName: 'Deleted user',
+      avatarUrl: null,
+      homeLocationAccuracyMetres: null,
+      emailVerifiedAt: null,
+      phoneVerifiedAt: null,
+      preferences: {},
+      accountStatus: 'deleted',
+    },
+  });
+  await tx.$executeRaw`UPDATE "user" SET "homeLocation" = NULL WHERE id = ${id}::uuid`;
+}
+
 // Shape returned by the raw profile query. homeLocation is geography and can't
 // be selected via Prisma, so lat/lng are extracted with PostGIS accessors.
 interface ProfileRow {

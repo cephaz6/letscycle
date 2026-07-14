@@ -125,6 +125,13 @@ export async function revokeSubscription(db: Db, endpoint: string): Promise<void
   });
 }
 
+export async function revokeAllForUser(db: Db, userId: string): Promise<void> {
+  await db.pushSubscription.updateMany({
+    where: { userId, revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+}
+
 // --- preferences ---
 
 export async function getPreferences(
