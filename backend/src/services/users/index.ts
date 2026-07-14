@@ -5,6 +5,8 @@ export {
   getMyProfile,
   updateMyProfile,
   getPublicProfile,
+  deleteMyAccount,
+  exportMyData,
 } from './user.service.js';
 export type {
   CreateUserInput,

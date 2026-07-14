@@ -5,11 +5,14 @@ import { requireAuth } from '../middleware/auth.js';
 import { BadRequestError, UnauthorizedError } from '../../shared/errors/httpErrors.js';
 import type { TokenVerifier } from '../../services/auth/index.js';
 import {
+  deleteMyAccount,
+  exportMyData,
   getMyProfile,
   getPublicProfile,
   updateMyProfile,
   type UpdateProfileInput,
 } from '../../services/users/index.js';
+import { recordAudit } from '../../services/system/index.js';
 
 const homeLocationSchema = z
   .object({
@@ -58,6 +61,36 @@ export function createUserRouter(verifier: TokenVerifier): Router {
     if (!req.user) throw new UnauthorizedError();
     const updated = await updateMyProfile(req.user.id, req.body as UpdateProfileInput);
     res.status(200).json(updated);
+  });
+
+  // GDPR data portability — the caller's own data as JSON.
+  router.get('/users/me/export', auth, async (req, res) => {
+    if (!req.user) throw new UnauthorizedError();
+    const data = await exportMyData(req.user.id);
+    await recordAudit({
+      actorUserId: req.user.id,
+      action: 'user.dataExported',
+      targetType: 'user',
+      targetId: req.user.id,
+      ipAddress: req.ip ?? 'unknown',
+      userAgent: req.headers['user-agent'] ?? 'unknown',
+    });
+    res.status(200).json(data);
+  });
+
+  // GDPR erasure — anonymise the account and revoke access.
+  router.delete('/users/me', auth, async (req, res) => {
+    if (!req.user) throw new UnauthorizedError();
+    await deleteMyAccount(req.user.id);
+    await recordAudit({
+      actorUserId: req.user.id,
+      action: 'user.accountDeleted',
+      targetType: 'user',
+      targetId: req.user.id,
+      ipAddress: req.ip ?? 'unknown',
+      userAgent: req.headers['user-agent'] ?? 'unknown',
+    });
+    res.status(204).end();
   });
 
   router.get('/users/:userId', auth, async (req, res) => {
