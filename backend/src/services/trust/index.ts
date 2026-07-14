@@ -1,4 +1,9 @@
-export { submitReview, raiseFlag, getUserTrustScore } from './trust.service.js';
+export {
+  submitReview,
+  raiseFlag,
+  getUserTrustScore,
+  listUserReviews,
+} from './trust.service.js';
 export { registerTrustHandlers } from './handlers.js';
 export type {
   SubmitReviewInput,

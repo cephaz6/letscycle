@@ -1,4 +1,4 @@
-export { AuthService } from './auth.service.js';
+export { AuthService, revokeAllSessions } from './auth.service.js';
 export { createDummyCognito } from './cognito.dummy.js';
 export type {
   AuthSession,

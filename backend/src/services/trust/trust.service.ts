@@ -67,6 +67,18 @@ export async function getUserTrustScore(
   return repo.getTrustScore(db, userId);
 }
 
+// For privacy export: reviews the user gave and received.
+export async function listUserReviews(
+  userId: string,
+  db: PrismaClient = getDb(),
+): Promise<{ given: ReviewView[]; received: ReviewView[] }> {
+  const [given, received] = await Promise.all([
+    reviewRepo.listForReviewer(db, userId),
+    reviewRepo.listForReviewee(db, userId),
+  ]);
+  return { given, received };
+}
+
 // POST /reviews — reviewer rates the other party of a completed transaction.
 export async function submitReview(
   reviewerUserId: string,

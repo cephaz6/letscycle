@@ -1,4 +1,8 @@
-export { TransactionService, getTransactionParties } from './transaction.service.js';
+export {
+  TransactionService,
+  getTransactionParties,
+  listUserTransactions,
+} from './transaction.service.js';
 export { PayoutService } from './payout.service.js';
 export { createDummyPaymentGateway } from './payment.dummy.js';
 export type { PaymentGateway } from './payment.types.js';

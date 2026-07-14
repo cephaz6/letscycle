@@ -9,6 +9,8 @@ export {
   confirmPhoto,
   favouriteListing,
   unfavouriteListing,
+  listSellerListings,
+  removeSellerListings,
 } from './listing.service.js';
 export {
   seedCategories,

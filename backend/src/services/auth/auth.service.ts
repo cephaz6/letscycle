@@ -3,6 +3,7 @@ import type { PrismaClient } from '@prisma/client';
 import { getDb } from '../../shared/db/client.js';
 import { ConflictError, UnauthorizedError } from '../../shared/errors/httpErrors.js';
 import { createUser, getUserById, getUserByCognitoSub } from '../users/index.js';
+import { recordAudit } from '../system/index.js';
 import * as repo from './auth.repository.js';
 import type {
   AuthSession,
@@ -12,6 +13,14 @@ import type {
 } from './auth.types.js';
 
 const REFRESH_TOKEN_TTL_DAYS = 30;
+
+// Revokes every active session for a user (e.g. on account deletion).
+export async function revokeAllSessions(
+  userId: string,
+  db: PrismaClient = getDb(),
+): Promise<void> {
+  await repo.revokeAllForUser(db, userId);
+}
 
 export class AuthService {
   constructor(
@@ -49,6 +58,17 @@ export class AuthService {
     }
 
     const refreshToken = await this.issueRefreshToken(user.id, meta);
+    await recordAudit(
+      {
+        actorUserId: user.id,
+        action: 'auth.login',
+        targetType: 'user',
+        targetId: user.id,
+        ipAddress: meta.ipAddress,
+        userAgent: meta.userAgent,
+      },
+      this.db,
+    );
     return {
       userId: user.id,
       accessToken: session.accessToken,

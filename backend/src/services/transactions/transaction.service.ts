@@ -43,6 +43,14 @@ export async function getTransactionParties(
   };
 }
 
+// Non-guarded list for privacy export (the caller is always the subject).
+export async function listUserTransactions(
+  userId: string,
+  db: PrismaClient = getDb(),
+): Promise<TransactionView[]> {
+  return repo.listByUser(db, userId);
+}
+
 // Disputes and completion are only reachable from these active states.
 const DISPUTABLE: TransactionView['status'][] = [
   'paymentAuthorised',

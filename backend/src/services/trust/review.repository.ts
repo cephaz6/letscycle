@@ -49,3 +49,14 @@ export async function listForReviewee(
     orderBy: { createdAt: 'desc' },
   });
 }
+
+export async function listForReviewer(
+  db: Db,
+  reviewerUserId: string,
+): Promise<ReviewView[]> {
+  return db.review.findMany({
+    where: { reviewerUserId },
+    select: reviewSelect,
+    orderBy: { createdAt: 'desc' },
+  });
+}

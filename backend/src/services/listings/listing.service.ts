@@ -233,6 +233,31 @@ export async function searchListings(
   return runSearch(db, filters);
 }
 
+// --- account lifecycle (used by privacy erasure/export) ---
+
+export async function listSellerListings(
+  sellerId: string,
+  db: PrismaClient = getDb(),
+): Promise<ListingDetail[]> {
+  const rows = await db.listing.findMany({
+    where: { sellerId },
+    select: { id: true },
+    orderBy: { createdAt: 'desc' },
+  });
+  return Promise.all(rows.map((r) => loadDetail(db, r.id)));
+}
+
+// Withdraws a seller's non-terminal listings (on account deletion).
+export async function removeSellerListings(
+  sellerId: string,
+  db: PrismaClient = getDb(),
+): Promise<void> {
+  await db.listing.updateMany({
+    where: { sellerId, status: { in: ['draft', 'active', 'reserved'] } },
+    data: { status: 'removed' },
+  });
+}
+
 // --- photos (two-step: presign + pending row, then confirm) ---
 
 export interface PhotoUploadResult {
