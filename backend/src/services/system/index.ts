@@ -10,6 +10,8 @@ export {
   acceptCurrentTerms,
   hasAcceptedCurrentTerms,
 } from './terms.service.js';
+export { recordAudit } from './audit.service.js';
+export type { AuditInput } from './audit.service.js';
 export {
   ALLOWED_UPLOAD_TYPES,
   MAX_UPLOAD_BYTES,
