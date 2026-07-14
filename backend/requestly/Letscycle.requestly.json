@@ -291,6 +291,50 @@
       },
       "rank": "a2"
     },
+    {
+      "id": "11110002-0000-4000-8000-000000000004",
+      "name": "exportMyData",
+      "description": "GET /users/me/export — GDPR data portability (JSON bundle)",
+      "type": "api",
+      "parentId": "1a2b3c4d-0001-4a01-8a01-000000000001",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/users/me/export",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a3"
+    },
+    {
+      "id": "11110002-0000-4000-8000-000000000005",
+      "name": "deleteMyAccount",
+      "description": "DELETE /users/me — GDPR erasure (anonymises account, revokes access)",
+      "type": "api",
+      "parentId": "1a2b3c4d-0001-4a01-8a01-000000000001",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/users/me",
+          "method": "DELETE",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a4"
+    },
 
     {
       "id": "11110003-0000-4000-8000-000000000001",
