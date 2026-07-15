@@ -1,6 +1,10 @@
-name: ci
+name: backend-ci
 
-on: push
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
 
 permissions:
   contents: read

@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+
+/* Minimal theme taste for the scaffold; the full green/Sora token system lands
+   in the design-system step (packages/ui). */
+@theme {
+  --font-sans: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  --color-brand: oklch(0.62 0.15 155);
+}
+
+body {
+  @apply bg-white text-slate-900 antialiased;
+}
