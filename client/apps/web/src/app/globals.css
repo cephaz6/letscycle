@@ -1,12 +1,10 @@
 @import 'tailwindcss';
+@import '@letscycle/ui/theme.css';
 
-/* Minimal theme taste for the scaffold; the full green/Sora token system lands
-   in the design-system step (packages/ui). */
-@theme {
-  --font-sans: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
-  --color-brand: oklch(0.62 0.15 155);
-}
+/* The design-system package lives outside apps/web, so Tailwind can't discover
+   its class usage automatically — register it as a scanned source. */
+@source '../../../../packages/ui/src/**/*.{ts,tsx}';
 
 body {
-  @apply bg-white text-slate-900 antialiased;
+  @apply bg-background text-foreground antialiased;
 }
