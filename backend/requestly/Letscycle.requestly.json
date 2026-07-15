@@ -115,6 +115,16 @@
       "data": { "auth": { "type": "inherit" } },
       "rank": "a9"
     },
+    {
+      "id": "1a2b3c4d-0004-4a04-8a04-000000000004",
+      "name": "Safety",
+      "description": "Verified meet points and safe-transit sessions",
+      "type": "collection",
+      "parentId": "71d7eabe-5642-4217-97b7-3a3bc0676130",
+      "deleted": false,
+      "data": { "auth": { "type": "inherit" } },
+      "rank": "b0"
+    },
 
     {
       "id": "11110001-0000-4000-8000-000000000001",
@@ -1270,6 +1280,85 @@
         "auth": { "type": "inherit" }
       },
       "rank": "a1"
+    },
+
+    {
+      "id": "1111000b-0000-4000-8000-000000000001",
+      "name": "nearbyMeetPoints",
+      "description": "GET /meet-points — verified safe meeting spots near a point",
+      "type": "api",
+      "parentId": "1a2b3c4d-0004-4a04-8a04-000000000004",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/meet-points",
+          "method": "GET",
+          "headers": [],
+          "queryParams": [
+            { "key": "lat", "value": "53.4084" },
+            { "key": "lng", "value": "-2.9916" },
+            { "key": "radiusKm", "value": "10" }
+          ],
+          "pathVariables": [],
+          "body": { "contentType": "none" },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a0"
+    },
+    {
+      "id": "1111000b-0000-4000-8000-000000000002",
+      "name": "startSafeTransit",
+      "description": "POST /transactions/:id/safe-transit — participant starts a session",
+      "type": "api",
+      "parentId": "1a2b3c4d-0004-4a04-8a04-000000000004",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/transactions/:id/safe-transit",
+          "method": "POST",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"liveLocationShareEnabled\": true\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a1"
+    },
+    {
+      "id": "1111000b-0000-4000-8000-000000000003",
+      "name": "updateSafeTransit",
+      "description": "PATCH /safe-transit/:id — confirmArrival | triggerDuress | end | live-share | trusted-contact",
+      "type": "api",
+      "parentId": "1a2b3c4d-0004-4a04-8a04-000000000004",
+      "deleted": false,
+      "data": {
+        "type": "http",
+        "request": {
+          "url": "{{baseUrl}}/safe-transit/:id",
+          "method": "PATCH",
+          "headers": [],
+          "queryParams": [],
+          "pathVariables": [{ "key": "id", "value": "" }],
+          "body": {
+            "contentType": "raw",
+            "raw": "{\n  \"confirmArrival\": true,\n  \"end\": true\n}",
+            "rawContentType": "application/json"
+          },
+          "contentType": "none"
+        },
+        "auth": { "type": "inherit" }
+      },
+      "rank": "a2"
     }
   ],
   "environments": [],
