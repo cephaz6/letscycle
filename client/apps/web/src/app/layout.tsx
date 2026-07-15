@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Sora } from 'next/font/google';
 import { ThemeProvider, themeInitScript } from '@letscycle/ui';
+import { ApiProvider } from '@letscycle/api-client';
 import './globals.css';
 
 const sora = Sora({ subsets: ['latin'], variable: '--font-sora' });
@@ -27,7 +28,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="font-sans">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ApiProvider>{children}</ApiProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
