@@ -10,6 +10,7 @@ import { createNotificationRouter } from './routes/notification.route.js';
 import { createConversationRouter } from './routes/conversation.route.js';
 import { createTransactionRouter } from './routes/transaction.route.js';
 import { createTrustRouter } from './routes/trust.route.js';
+import { createSafetyRouter } from './routes/safety.route.js';
 import { applySecurity } from './middleware/security.js';
 import { errorHandler } from './middleware/error.js';
 import type { AuthService, TokenVerifier } from '../services/auth/index.js';
@@ -50,6 +51,7 @@ export function createApp(deps: AppDeps = {}): express.Express {
     app.use('/api/v1', createMatchRouter(deps.tokenVerifier));
     app.use('/api/v1', createConversationRouter(deps.tokenVerifier));
     app.use('/api/v1', createTrustRouter(deps.tokenVerifier));
+    app.use('/api/v1', createSafetyRouter(deps.tokenVerifier));
     if (deps.transactionService && deps.payoutService) {
       app.use(
         '/api/v1',
