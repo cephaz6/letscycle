@@ -15,5 +15,21 @@ services:
       timeout: 5s
       retries: 10
 
+  backend:
+    build:
+      context: .
+    image: letscycle-backend
+    ports:
+      - '3000:3000'
+    environment:
+      # Container-to-container DB address (service name `db`).
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/letscycle
+      NODE_ENV: development
+      FRONTEND_ORIGIN: http://localhost:3001
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   dbdata:
