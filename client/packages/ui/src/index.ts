@@ -20,6 +20,7 @@ export {
 } from './components/typography';
 export { Icon, type IconProps } from './components/icon';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
+export { Badge, badgeVariants, type BadgeProps } from './components/badge';
 
 // Theme
 export {
