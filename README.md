@@ -109,6 +109,7 @@ swapped in at deploy time.
 | **ESLint** + **typescript-eslint**                                 | Linting.                                                                   |
 | **eslint-plugin-import-x** + **eslint-import-resolver-typescript** | Enforces module boundaries (modules importable only via their `index.ts`). |
 | **Prettier** + **eslint-config-prettier**                          | Formatting (Prettier owns style; ESLint owns correctness).                 |
+| **Docker Compose**                                                 | Local stack: PostGIS db + backend image (multi-stage, migrates on start).  |
 
 ### Compliance (GDPR)
 
@@ -194,10 +195,11 @@ with their feature steps.
 
 ### Tooling & quality
 
-| Technology                          | Purpose                                                                  |
-| ----------------------------------- | ------------------------------------------------------------------------ |
-| **ESLint** + **eslint-config-next** | Linting with Next.js's recommended rules (core-web-vitals + TypeScript). |
-| **@eslint/eslintrc**                | Flat-config compatibility shim for Next's shareable config.              |
+| Technology                          | Purpose                                                                   |
+| ----------------------------------- | ------------------------------------------------------------------------- |
+| **ESLint** + **eslint-config-next** | Linting with Next.js's recommended rules (core-web-vitals + TypeScript).  |
+| **@eslint/eslintrc**                | Flat-config compatibility shim for Next's shareable config.               |
+| **Docker** (multi-stage)            | Production image via Next.js `standalone`; non-root runtime, healthcheck. |
 
 ### Planned frontend libraries (per PRD, not yet installed)
 
@@ -243,14 +245,23 @@ CI is **path-filtered** so each app only builds when its files change:
 
 ### Backend
 
+Local dev (hot reload on the host, Postgres in Docker):
+
 ```bash
 cd backend
 npm ci
-docker compose up -d --wait      # PostgreSQL 16 + PostGIS
+docker compose up -d db --wait   # PostgreSQL 16 + PostGIS only
 npx prisma generate
 npx prisma migrate deploy
 npm run dev                       # http://localhost:3000 (API at /api/v1)
 npm test                          # Vitest
+```
+
+Or run the whole API in Docker (db + backend; applies migrations on start):
+
+```bash
+cd backend
+docker compose up -d --build      # db + backend → http://localhost:3000/api/v1
 ```
 
 ### Frontend
@@ -266,6 +277,24 @@ pnpm lint && pnpm typecheck
 
 > The web app runs on **3001** so it doesn't clash with the backend on **3000**;
 > it reads the API base URL from `NEXT_PUBLIC_API_BASE_URL`.
+
+#### Run the web app in Docker
+
+A production-grade image (Next.js `standalone`, multi-stage build, non-root
+runtime) lives at [`client/apps/web/Dockerfile`](client/apps/web/Dockerfile):
+
+```bash
+cd client
+docker compose up --build          # then open http://localhost:3001
+```
+
+`NEXT_PUBLIC_*` values are inlined at build time, so the API base URL is a
+**build arg** (defaulting to the host backend at `http://localhost:3000/api/v1`).
+Point it elsewhere per environment:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=https://api.example.com/api/v1 docker compose up --build
+```
 
 > **Windows note:** `pnpm` is installed user-space (`npm install -g pnpm@9`) and
 > is available on the PowerShell PATH.
