@@ -25,7 +25,8 @@ services:
       # Container-to-container DB address (service name `db`).
       DATABASE_URL: postgresql://postgres:postgres@db:5432/letscycle
       NODE_ENV: development
-      FRONTEND_ORIGIN: http://localhost:3001
+      # FRONTEND_ORIGIN intentionally unset for the local stack so CORS reflects
+      # any dev origin (localhost / 127.0.0.1 / LAN IP). Pin it in real envs.
     depends_on:
       db:
         condition: service_healthy

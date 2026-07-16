@@ -99,6 +99,8 @@ export interface ListingSummary {
   distanceMetres: number | null;
   publishedAt: Date | null;
   createdAt: Date;
+  // Key of the first confirmed photo (for grid thumbnails), or null.
+  coverPhotoKey: string | null;
 }
 
 export interface SearchListingsResult {

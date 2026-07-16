@@ -44,3 +44,25 @@ export function requireAuth(verifier: TokenVerifier): RequestHandler {
     next();
   };
 }
+
+// Attaches req.user when a valid token is present, but never rejects — for
+// public reads that personalise when signed in (e.g. anonymous vs. member views).
+export function optionalAuth(verifier: TokenVerifier): RequestHandler {
+  return async (req: Request, _res: Response, next: NextFunction) => {
+    const header = req.headers.authorization;
+    if (!header?.startsWith('Bearer ')) {
+      next();
+      return;
+    }
+    try {
+      const claims = await verifier.verify(header.slice('Bearer '.length));
+      const user = await getUserByCognitoSub(claims.cognitoSub);
+      if (user && user.accountStatus === 'active') {
+        req.user = { id: user.id, cognitoSub: user.cognitoSub, roles: claims.roles };
+      }
+    } catch {
+      // Ignore bad tokens on public routes — proceed as anonymous.
+    }
+    next();
+  };
+}

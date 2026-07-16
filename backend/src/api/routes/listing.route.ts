@@ -1,7 +1,7 @@
 import { Router, type Request } from 'express';
 import { z } from 'zod';
 import { validateBody } from '../middleware/validate.js';
-import { requireAuth } from '../middleware/auth.js';
+import { optionalAuth, requireAuth } from '../middleware/auth.js';
 import { BadRequestError, UnauthorizedError } from '../../shared/errors/httpErrors.js';
 import type { TokenVerifier } from '../../services/auth/index.js';
 import type { StorageService } from '../../services/system/index.js';
@@ -116,9 +116,11 @@ function requireUserId(req: Request): string {
 export function createListingRouter(deps: ListingRouterDeps): Router {
   const router = Router();
   const auth = requireAuth(deps.tokenVerifier);
+  const optional = optionalAuth(deps.tokenVerifier);
   const storage = deps.storageService;
 
-  router.get('/categories', auth, async (_req, res) => {
+  // Public reads (browse/detail work signed-out; writes below stay auth'd).
+  router.get('/categories', optional, async (_req, res) => {
     res.status(200).json(await listCategories());
   });
 
@@ -140,7 +142,7 @@ export function createListingRouter(deps: ListingRouterDeps): Router {
     res.status(201).json(await createListing(input));
   });
 
-  router.get('/listings', auth, async (req, res) => {
+  router.get('/listings', optional, async (req, res) => {
     const parsed = searchSchema.safeParse(req.query);
     if (!parsed.success) {
       throw new BadRequestError(parsed.error.issues[0]?.message ?? 'Invalid query');
@@ -163,10 +165,10 @@ export function createListingRouter(deps: ListingRouterDeps): Router {
     );
   });
 
-  router.get('/listings/:id', auth, async (req, res) => {
+  router.get('/listings/:id', optional, async (req, res) => {
     const id = uuidParam(req, 'id');
     const source = (req.query.source as ViewSource | undefined) ?? 'direct';
-    res.status(200).json(await viewListing(id, requireUserId(req), source));
+    res.status(200).json(await viewListing(id, req.user?.id ?? null, source));
   });
 
   router.patch(
