@@ -17,6 +17,7 @@ interface Tokens {
 const tokens: Tokens = { accessToken: null, refreshToken: null };
 
 let sessionExpiredHandler: (() => void) | null = null;
+let tokensChangedHandler: ((tokens: Tokens) => void) | null = null;
 
 export function setTokens(next: {
   accessToken: string;
@@ -24,11 +25,26 @@ export function setTokens(next: {
 }): void {
   tokens.accessToken = next.accessToken;
   tokens.refreshToken = next.refreshToken;
+  tokensChangedHandler?.({ ...tokens });
 }
 
 export function clearTokens(): void {
   tokens.accessToken = null;
   tokens.refreshToken = null;
+  tokensChangedHandler?.({ ...tokens });
+}
+
+/**
+ * Register a callback fired whenever the tokens change (login, silent refresh,
+ * logout) — the app uses this to persist the session. Returns an unsubscribe fn.
+ */
+export function onTokensChanged(
+  handler: (tokens: { accessToken: string | null; refreshToken: string | null }) => void,
+): () => void {
+  tokensChangedHandler = handler;
+  return () => {
+    if (tokensChangedHandler === handler) tokensChangedHandler = null;
+  };
 }
 
 export function getAccessToken(): string | null {

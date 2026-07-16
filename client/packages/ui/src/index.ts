@@ -21,6 +21,7 @@ export {
 export { Icon, type IconProps } from './components/icon';
 export { Skeleton, type SkeletonProps } from './components/skeleton';
 export { Badge, badgeVariants, type BadgeProps } from './components/badge';
+export { Spinner, type SpinnerProps } from './components/spinner';
 
 // Theme
 export {

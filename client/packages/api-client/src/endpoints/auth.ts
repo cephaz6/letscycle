@@ -46,6 +46,19 @@ export const authApi = {
     return session;
   },
 
+  /** Exchange a Google ID token (credential) for a session. */
+  async loginWithGoogle(credential: string): Promise<AuthSession> {
+    const session = await http.post<AuthSession>('/auth/google', {
+      json: { credential },
+      auth: false,
+    });
+    setTokens({
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+    });
+    return session;
+  },
+
   /** Manually rotate the session (the http layer also does this on 401). */
   async refresh(): Promise<AuthSession | null> {
     const refreshToken = getRefreshToken();
