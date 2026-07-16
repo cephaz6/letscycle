@@ -27,6 +27,8 @@ services:
       NODE_ENV: development
       # FRONTEND_ORIGIN intentionally unset for the local stack so CORS reflects
       # any dev origin (localhost / 127.0.0.1 / LAN IP). Pin it in real envs.
+      # Set GOOGLE_CLIENT_ID in your shell to enable "Continue with Google".
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     depends_on:
       db:
         condition: service_healthy

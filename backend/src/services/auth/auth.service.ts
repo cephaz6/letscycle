@@ -2,12 +2,19 @@ import { createHash, randomBytes } from 'node:crypto';
 import type { PrismaClient } from '@prisma/client';
 import { getDb } from '../../shared/db/client.js';
 import { ConflictError, UnauthorizedError } from '../../shared/errors/httpErrors.js';
-import { createUser, getUserById, getUserByCognitoSub } from '../users/index.js';
+import {
+  createUser,
+  getUserById,
+  getUserByCognitoSub,
+  getUserByEmail,
+} from '../users/index.js';
 import { recordAudit } from '../system/index.js';
 import * as repo from './auth.repository.js';
+import { BadRequestError } from '../../shared/errors/httpErrors.js';
 import type {
   AuthSession,
   CognitoClient,
+  GoogleVerifier,
   RequestMeta,
   SignupInput,
 } from './auth.types.js';
@@ -26,7 +33,56 @@ export class AuthService {
   constructor(
     private readonly cognito: CognitoClient,
     private readonly db: PrismaClient = getDb(),
+    private readonly googleVerifier?: GoogleVerifier,
   ) {}
+
+  // Federated Google sign-in. Verifies the Google ID token, then finds or
+  // creates the matching account and issues a session. An existing account with
+  // the same email (e.g. from email/password) is reused, so Google is a true
+  // alternative sign-in for the same user.
+  async loginWithGoogle(idToken: string, meta: RequestMeta): Promise<AuthSession> {
+    if (!this.googleVerifier) {
+      throw new BadRequestError('Google sign-in is not configured');
+    }
+    const profile = await this.googleVerifier.verify(idToken);
+
+    const googleSub = `google:${profile.googleSub}`;
+    let user =
+      (await getUserByCognitoSub(googleSub, this.db)) ??
+      (await getUserByEmail(profile.email, this.db));
+
+    if (!user) {
+      user = await createUser(
+        { email: profile.email, displayName: profile.name, cognitoSub: googleSub },
+        this.db,
+      );
+    } else if (user.accountStatus !== 'active') {
+      throw new UnauthorizedError('Account is not active');
+    }
+
+    const session = await this.cognito.issueAccessToken({
+      cognitoSub: user.cognitoSub,
+      email: user.email,
+    });
+    const refreshToken = await this.issueRefreshToken(user.id, meta);
+    await recordAudit(
+      {
+        actorUserId: user.id,
+        action: 'auth.login.google',
+        targetType: 'user',
+        targetId: user.id,
+        ipAddress: meta.ipAddress,
+        userAgent: meta.userAgent,
+      },
+      this.db,
+    );
+    return {
+      userId: user.id,
+      accessToken: session.accessToken,
+      expiresInSeconds: session.expiresInSeconds,
+      refreshToken,
+    };
+  }
 
   async signup(input: SignupInput): Promise<{ userId: string }> {
     const { cognitoSub } = await this.cognito

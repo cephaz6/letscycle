@@ -13,6 +13,25 @@ export interface CognitoClient {
   refreshSession(input: {
     cognitoSub: string;
   }): Promise<{ accessToken: string; expiresInSeconds: number }>;
+  // Mint an access token for an already-known identity (e.g. after federated
+  // Google sign-in), without a password. Real Cognito federation issues these
+  // via the hosted pool; the dummy mints a dev JWT.
+  issueAccessToken(input: {
+    cognitoSub: string;
+    email: string;
+  }): Promise<{ accessToken: string; expiresInSeconds: number }>;
+}
+
+// Verified Google identity from an ID token.
+export interface GoogleProfile {
+  googleSub: string;
+  email: string;
+  emailVerified: boolean;
+  name: string;
+}
+
+export interface GoogleVerifier {
+  verify(idToken: string): Promise<GoogleProfile>;
 }
 
 export interface TokenClaims {

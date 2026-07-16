@@ -2,6 +2,7 @@ export {
   createUser,
   getUserById,
   getUserByCognitoSub,
+  getUserByEmail,
   getMyProfile,
   updateMyProfile,
   getPublicProfile,

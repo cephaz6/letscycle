@@ -11,6 +11,9 @@ const envSchema = z.object({
   AWS_REGION: z.string().optional(),
   COGNITO_USER_POOL_ID: z.string().optional(),
   COGNITO_CLIENT_ID: z.string().optional(),
+  // Google OAuth client ID — enables "Continue with Google" (verifies the ID
+  // token's audience). Optional until Google sign-in is configured.
+  GOOGLE_CLIENT_ID: z.string().optional(),
   // Signs dummy-Cognito dev tokens; forbidden in production (server enforces).
   AUTH_DEV_TOKEN_SECRET: z.string().min(16).optional(),
   S3_BUCKET_UPLOADS: z.string().optional(),

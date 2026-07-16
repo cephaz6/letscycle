@@ -18,6 +18,10 @@ const refreshSchema = z.object({
   refreshToken: z.string().min(1),
 });
 
+const googleSchema = z.object({
+  credential: z.string().min(1),
+});
+
 function requestMeta(req: Request): RequestMeta {
   return {
     userAgent: req.headers['user-agent'] ?? 'unknown',
@@ -38,6 +42,12 @@ export function createAuthRouter(auth: AuthService): Router {
       req.body as z.infer<typeof loginSchema>,
       requestMeta(req),
     );
+    res.status(200).json(session);
+  });
+
+  router.post('/auth/google', validateBody(googleSchema), async (req, res) => {
+    const { credential } = req.body as z.infer<typeof googleSchema>;
+    const session = await auth.loginWithGoogle(credential, requestMeta(req));
     res.status(200).json(session);
   });
 

@@ -53,6 +53,13 @@ export async function getUserByCognitoSub(
   return repo.findByCognitoSub(db, cognitoSub);
 }
 
+export async function getUserByEmail(
+  email: string,
+  db: PrismaClient = getDb(),
+): Promise<UserAccount | null> {
+  return repo.findByEmail(db, email);
+}
+
 export async function getMyProfile(
   userId: string,
   db: PrismaClient = getDb(),

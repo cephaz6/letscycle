@@ -47,14 +47,20 @@ export function createDummyCognito(secret: string): {
     },
 
     async refreshSession({ cognitoSub }) {
+      // Federated (e.g. Google) users aren't in the in-memory accounts map;
+      // still mint a fresh token — the email claim is best-effort.
       const entry = [...accounts.entries()].find(
         ([, account]) => account.cognitoSub === cognitoSub,
       );
-      if (!entry) {
-        throw new Error('NotAuthorizedException');
-      }
       return {
-        accessToken: await mintAccessToken(cognitoSub, entry[0]),
+        accessToken: await mintAccessToken(cognitoSub, entry?.[0] ?? ''),
+        expiresInSeconds: ACCESS_TOKEN_TTL_SECONDS,
+      };
+    },
+
+    async issueAccessToken({ cognitoSub, email }) {
+      return {
+        accessToken: await mintAccessToken(cognitoSub, email),
         expiresInSeconds: ACCESS_TOKEN_TTL_SECONDS,
       };
     },
