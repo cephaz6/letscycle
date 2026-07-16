@@ -14,6 +14,16 @@ interface SummaryRow extends Omit<ListingSummary, 'location'> {
   lng: number;
 }
 
+// First confirmed photo key per listing, for grid thumbnails.
+const coverPhotoSql = Prisma.sql`(
+  SELECT s."key"
+  FROM "listingPhoto" lp
+  JOIN "s3Object" s ON s.id = lp."s3ObjectId"
+  WHERE lp."listingId" = "listing".id AND s."lifecycleStatus" = 'confirmed'
+  ORDER BY lp."displayOrder" ASC
+  LIMIT 1
+)`;
+
 function pointSql(c: GeoPoint): Prisma.Sql {
   return Prisma.sql`ST_SetSRID(ST_MakePoint(${c.lng}, ${c.lat}), 4326)::geography`;
 }
@@ -81,7 +91,8 @@ export async function searchListings(
       ST_Y(location::geometry) AS lat,
       ST_X(location::geometry) AS lng,
       ${distance} AS "distanceMetres",
-      "publishedAt", "createdAt"
+      "publishedAt", "createdAt",
+      ${coverPhotoSql} AS "coverPhotoKey"
     FROM "listing"
     WHERE ${where}
     ORDER BY ${buildOrderBy(filters)}

@@ -17,6 +17,7 @@ export {
   listCategories,
   assertCategoryExists,
 } from './category.service.js';
+export { seedDemoListings } from './listing.seed.js';
 export type {
   CreateListingInput,
   UpdateListingInput,
