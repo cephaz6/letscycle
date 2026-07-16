@@ -6,10 +6,10 @@ people.
 This repository is a **monorepo of two independent applications** that share one
 Git history and path-filtered CI:
 
-| Part            | Location               | Stack                                                                    | Status                       |
-| --------------- | ---------------------- | ------------------------------------------------------------------------ | ---------------------------- |
-| **Backend API** | [`backend/`](backend/) | Node + TypeScript modular monolith (Express, Prisma, PostgreSQL/PostGIS) | Steps 1–14 complete          |
-| **Frontend**    | [`client/`](client/)   | Turborepo + pnpm workspace (Next.js, React, Tailwind)                    | Step 3 (API client) complete |
+| Part            | Location               | Stack                                                                    | Status                                  |
+| --------------- | ---------------------- | ------------------------------------------------------------------------ | --------------------------------------- |
+| **Backend API** | [`backend/`](backend/) | Node + TypeScript modular monolith (Express, Prisma, PostgreSQL/PostGIS) | Steps 1–14 complete                     |
+| **Frontend**    | [`client/`](client/)   | Turborepo + pnpm workspace (Next.js, React, Tailwind)                    | Step 4 (auth) — Google + email/password |
 
 > This README is a living document. As new technologies, libraries, or tools are
 > added on either side, this file is updated alongside them.
@@ -208,7 +208,6 @@ as their build steps arrive:
 
 - **Radix UI** primitives (shadcn pattern) — accessible unstyled components,
   wrapped as more design-system primitives (Dialog, Select, Checkbox, …).
-- **Zustand** — lightweight client state (auth session store, step 4).
 - **React Hook Form** + **Zod** — forms and validation (Zod shared in spirit
   with the backend).
 - **MapLibre GL** + **OpenStreetMap** — maps for proximity/meet-points.
@@ -277,6 +276,24 @@ pnpm lint && pnpm typecheck
 
 > The web app runs on **3001** so it doesn't clash with the backend on **3000**;
 > it reads the API base URL from `NEXT_PUBLIC_API_BASE_URL`.
+
+#### Enable "Continue with Google" (optional)
+
+Email/password sign-up works out of the box. To also enable Google sign-in,
+create a **Google OAuth Client ID (Web)** at
+[console.cloud.google.com](https://console.cloud.google.com) → Credentials, with
+authorized JavaScript origins `http://localhost:3001` and `http://127.0.0.1:3001`.
+Then set the **same** value in both places and rebuild:
+
+```bash
+export GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com            # backend verify
+export NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com # web button
+cd backend && docker compose up -d --build backend
+cd ../client && docker compose up -d --build
+```
+
+The backend verifies Google's ID token via JWKS (no Cognito dependency); state
+lives in a Zustand store with the refresh token persisted for session restore.
 
 #### Run the web app in Docker
 
