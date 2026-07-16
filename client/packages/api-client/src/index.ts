@@ -38,6 +38,21 @@ export {
   type CreateUploadInput,
   type CreateUploadResult,
 } from './endpoints/system';
+export { categoriesApi, type Category } from './endpoints/categories';
+export {
+  listingsApi,
+  resolveImageUrl,
+  type ListingSummary,
+  type ListingDetail,
+  type ListingPhoto,
+  type ListingCondition,
+  type ListingType,
+  type ListingStatus,
+  type ListingSort,
+  type GeoPoint,
+  type SearchListingsParams,
+  type SearchListingsResult,
+} from './endpoints/listings';
 
 // Query layer
 export { ApiProvider, createQueryClient } from './query/query-provider';
@@ -51,3 +66,5 @@ export {
   useCurrentTerms,
   useAcceptCurrentTerms,
 } from './hooks/use-system';
+export { useCategories } from './hooks/use-categories';
+export { useListings, useListing } from './hooks/use-listings';
