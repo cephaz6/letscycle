@@ -39,7 +39,12 @@ export {
   type CreateUploadInput,
   type CreateUploadResult,
 } from './endpoints/system';
-export { usersApi, type MyProfile } from './endpoints/users';
+export {
+  usersApi,
+  type MyProfile,
+  type PublicProfile,
+  type UpdateProfileInput,
+} from './endpoints/users';
 export { categoriesApi, type Category } from './endpoints/categories';
 export {
   listingsApi,

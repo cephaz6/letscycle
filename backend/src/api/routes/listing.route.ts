@@ -83,6 +83,7 @@ const photoSchema = z
 const searchSchema = z
   .object({
     categoryId: z.uuid().optional(),
+    sellerId: z.uuid().optional(),
     listingType: z.enum(['sell', 'giveaway']).optional(),
     minPricePence: z.coerce.number().int().nonnegative().optional(),
     maxPricePence: z.coerce.number().int().nonnegative().optional(),
@@ -151,6 +152,7 @@ export function createListingRouter(deps: ListingRouterDeps): Router {
     res.status(200).json(
       await searchListings({
         ...(q.categoryId !== undefined && { categoryId: q.categoryId }),
+        ...(q.sellerId !== undefined && { sellerId: q.sellerId }),
         ...(q.listingType !== undefined && { listingType: q.listingType }),
         ...(q.minPricePence !== undefined && { minPricePence: q.minPricePence }),
         ...(q.maxPricePence !== undefined && { maxPricePence: q.maxPricePence }),

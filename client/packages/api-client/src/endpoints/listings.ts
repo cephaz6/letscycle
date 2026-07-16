@@ -78,6 +78,7 @@ export type ListingSort =
 
 export interface SearchListingsParams {
   categoryId?: string;
+  sellerId?: string;
   listingType?: ListingType;
   keyword?: string;
   minPricePence?: number;
