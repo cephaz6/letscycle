@@ -6,10 +6,10 @@ people.
 This repository is a **monorepo of two independent applications** that share one
 Git history and path-filtered CI:
 
-| Part            | Location               | Stack                                                                    | Status                          |
-| --------------- | ---------------------- | ------------------------------------------------------------------------ | ------------------------------- |
-| **Backend API** | [`backend/`](backend/) | Node + TypeScript modular monolith (Express, Prisma, PostgreSQL/PostGIS) | Steps 1–14 complete             |
-| **Frontend**    | [`client/`](client/)   | Turborepo + pnpm workspace (Next.js, React, Tailwind)                    | Step 2 (design system) complete |
+| Part            | Location               | Stack                                                                    | Status                       |
+| --------------- | ---------------------- | ------------------------------------------------------------------------ | ---------------------------- |
+| **Backend API** | [`backend/`](backend/) | Node + TypeScript modular monolith (Express, Prisma, PostgreSQL/PostGIS) | Steps 1–14 complete          |
+| **Frontend**    | [`client/`](client/)   | Turborepo + pnpm workspace (Next.js, React, Tailwind)                    | Step 3 (API client) complete |
 
 > This README is a living document. As new technologies, libraries, or tools are
 > added on either side, this file is updated alongside them.
@@ -168,12 +168,29 @@ Checkbox, …) arrive with the features that need them.
 - **Mobile-first** throughout (`min-h-dvh`, device-width viewport).
 - **Dark mode** built in from the start via `data-theme` on `<html>`.
 
+### API client (`packages/api-client`)
+
+The single, typed gateway to the backend — feature code never calls `fetch`
+directly. Framework-agnostic (no React in the core) so a future React Native app
+reuses it unchanged.
+
+| Technology                | Purpose                                                                                                    |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **TanStack Query**        | Server-state fetching/caching; one `QueryClient` per tab via `<ApiProvider>`, with typed hooks per domain. |
+| Typed `fetch` wrapper     | Base URL from `NEXT_PUBLIC_API_BASE_URL`, injects `Authorization: Bearer`, throws typed `ApiError`.        |
+| Refresh-on-401 (built-in) | Single-flight rotation via `/auth/refresh`, retries once, then fires an `onSessionExpired` handler.        |
+
+Endpoints so far: `authApi` (signup/login/refresh/logout) and `systemApi`
+(health, public settings, terms, presigned uploads); the remaining domains land
+with their feature steps.
+
 ### Shared packages
 
-| Package                 | Purpose                                                                           |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| **`@letscycle/config`** | Shared strict `tsconfig.base.json` consumed by every workspace package.           |
-| **`@letscycle/ui`**     | Design system: `theme.css` tokens, `cn()` helper, and the core styled primitives. |
+| Package                     | Purpose                                                                               |
+| --------------------------- | ------------------------------------------------------------------------------------- |
+| **`@letscycle/config`**     | Shared strict `tsconfig.base.json` consumed by every workspace package.               |
+| **`@letscycle/ui`**         | Design system: `theme.css` tokens, `cn()` helper, and the core styled primitives.     |
+| **`@letscycle/api-client`** | Typed API gateway: `fetch` wrapper, token store, refresh, endpoints, and Query hooks. |
 
 ### Tooling & quality
 
@@ -189,8 +206,7 @@ as their build steps arrive:
 
 - **Radix UI** primitives (shadcn pattern) — accessible unstyled components,
   wrapped as more design-system primitives (Dialog, Select, Checkbox, …).
-- **TanStack Query** — server-state fetching/caching.
-- **Zustand** — lightweight client state.
+- **Zustand** — lightweight client state (auth session store, step 4).
 - **React Hook Form** + **Zod** — forms and validation (Zod shared in spirit
   with the backend).
 - **MapLibre GL** + **OpenStreetMap** — maps for proximity/meet-points.
@@ -233,7 +249,7 @@ npm ci
 docker compose up -d --wait      # PostgreSQL 16 + PostGIS
 npx prisma generate
 npx prisma migrate deploy
-npm run dev                       # http://localhost:<port>
+npm run dev                       # http://localhost:3000 (API at /api/v1)
 npm test                          # Vitest
 ```
 
@@ -242,10 +258,14 @@ npm test                          # Vitest
 ```bash
 cd client
 pnpm install
-pnpm dev                          # turbo → Next.js dev server (http://localhost:3000)
+cp apps/web/.env.example apps/web/.env.local   # points at the local API
+pnpm dev                          # Next.js dev server → http://localhost:3001
 pnpm build                        # production build
 pnpm lint && pnpm typecheck
 ```
+
+> The web app runs on **3001** so it doesn't clash with the backend on **3000**;
+> it reads the API base URL from `NEXT_PUBLIC_API_BASE_URL`.
 
 > **Windows note:** `pnpm` is installed user-space (`npm install -g pnpm@9`) and
 > is available on the PowerShell PATH.

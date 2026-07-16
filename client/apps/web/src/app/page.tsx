@@ -12,6 +12,7 @@ import {
   Text,
   ThemeToggle,
 } from '@letscycle/ui';
+import { ApiStatus } from '@/components/api-status';
 
 export default function Home() {
   return (
@@ -24,7 +25,11 @@ export default function Home() {
         <ThemeToggle />
       </header>
 
-      <Heading level={1}>Design system</Heading>
+      <ApiStatus />
+
+      <Heading level={1} className="mt-4">
+        Design system
+      </Heading>
       <Text muted className="mt-2">
         Fresh-green tokens, Sora type, and the core primitives — all re-theme from
         one file. Toggle light/dark above.
