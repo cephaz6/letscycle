@@ -8,3 +8,12 @@
 body {
   @apply bg-background text-foreground antialiased;
 }
+
+/* Hide scrollbars on horizontally-scrolling strips (category pills, carousels). */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
