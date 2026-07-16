@@ -3,15 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LogOut, Menu, UserRound, X } from 'lucide-react';
+import { useCategories } from '@letscycle/api-client';
 import { buttonVariants, cn, Icon } from '@letscycle/ui';
-import { SITE_CATEGORIES } from '@/lib/categories';
 import { useAuth, useSignOut } from '@/features/auth';
 
-/** Hamburger + closable slide-in drawer for mobile (account links + categories).
- *  Categories come from the shared list (DB-sourced later). */
+/** Hamburger + closable slide-in drawer for mobile (account links + categories
+ *  from the DB). */
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+  const { data: categories } = useCategories();
   const { user, isAuthenticated } = useAuth();
   const signOut = useSignOut();
 
@@ -142,15 +143,19 @@ export function MobileMenu() {
               Browse categories
             </p>
             <ul>
-              {SITE_CATEGORIES.map((cat) => (
-                <li key={cat.label}>
+              {(categories ?? []).map((cat) => (
+                <li key={cat.id}>
                   <Link
-                    href="/"
+                    href={`/?category=${cat.slug}`}
                     onClick={close}
                     className="flex items-center gap-3 rounded-md px-2 py-2.5 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
-                    <Icon name={cat.icon} className="size-5 text-muted-foreground" strokeWidth={1.5} />
-                    {cat.label}
+                    <Icon
+                      name={cat.iconName}
+                      className="size-5 text-muted-foreground"
+                      strokeWidth={1.5}
+                    />
+                    {cat.name}
                   </Link>
                 </li>
               ))}
