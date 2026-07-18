@@ -49,6 +49,7 @@ export { categoriesApi, type Category } from './endpoints/categories';
 export {
   listingsApi,
   resolveImageUrl,
+  uploadToPresignedUrl,
   type ListingSummary,
   type ListingDetail,
   type ListingPhoto,
@@ -59,6 +60,9 @@ export {
   type GeoPoint,
   type SearchListingsParams,
   type SearchListingsResult,
+  type CreateListingInput,
+  type PhotoUploadRequest,
+  type PhotoUploadTicket,
 } from './endpoints/listings';
 
 // Query layer

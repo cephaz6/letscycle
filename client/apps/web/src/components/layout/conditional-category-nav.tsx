@@ -6,6 +6,7 @@ import { CategoryNav } from './category-nav';
 // Account / personal pages don't get the marketplace category strip.
 const HIDE_ON = [
   '/me',
+  '/sell',
   '/wishlist',
   '/settings',
   '/messages',
