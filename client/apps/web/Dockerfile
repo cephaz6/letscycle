@@ -33,6 +33,10 @@ COPY --from=deps /app/packages ./packages
 COPY . .
 ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api/v1
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID=
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ARG NEXT_PUBLIC_ASSET_BASE_URL=
+ENV NEXT_PUBLIC_ASSET_BASE_URL=$NEXT_PUBLIC_ASSET_BASE_URL
 RUN pnpm --filter @letscycle/web build
 
 # --- runner: minimal image, non-root, standalone output only ---

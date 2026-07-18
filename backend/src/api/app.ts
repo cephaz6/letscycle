@@ -11,6 +11,7 @@ import { createConversationRouter } from './routes/conversation.route.js';
 import { createTransactionRouter } from './routes/transaction.route.js';
 import { createTrustRouter } from './routes/trust.route.js';
 import { createSafetyRouter } from './routes/safety.route.js';
+import { createDevMediaRouter } from './routes/devMedia.route.js';
 import { applySecurity } from './middleware/security.js';
 import { errorHandler } from './middleware/error.js';
 import type { AuthService, TokenVerifier } from '../services/auth/index.js';
@@ -32,6 +33,8 @@ export interface AppDeps extends HealthDeps {
   payoutService?: PayoutService;
   // The server enables rate limiting; tests leave it off.
   enableRateLimit?: boolean;
+  // Dev-only local media store backing the dummy presigner (never in prod).
+  devMediaDir?: string;
 }
 
 export function createApp(deps: AppDeps = {}): express.Express {
@@ -42,6 +45,9 @@ export function createApp(deps: AppDeps = {}): express.Express {
   app.use(express.json());
 
   app.use('/api/v1', createHealthRouter(deps));
+  if (deps.devMediaDir) {
+    app.use('/api/v1', createDevMediaRouter(deps.devMediaDir));
+  }
   if (deps.authService) {
     app.use('/api/v1', createAuthRouter(deps.authService));
   }

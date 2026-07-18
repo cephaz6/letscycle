@@ -1,24 +1,44 @@
 'use client';
 
-import { PackageOpen } from 'lucide-react';
-import { useListings } from '@letscycle/api-client';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { PackageOpen, X } from 'lucide-react';
+import { useCategories, useListings } from '@letscycle/api-client';
 import { Skeleton, Text } from '@letscycle/ui';
 import { ListingCard } from './listing-card';
 
 export function BrowseView() {
-  const { data, isLoading, isError } = useListings({ limit: 40 });
+  const params = useSearchParams();
+  const slug = params.get('category');
+
+  const { data: categories } = useCategories();
+  const category = slug ? categories?.find((c) => c.slug === slug) : undefined;
+
+  const { data, isLoading, isError } = useListings(
+    category ? { categoryId: category.id, limit: 40 } : { limit: 40 },
+  );
   const items = data?.items ?? [];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <h1 className="mb-5 text-xl font-bold tracking-tight">
-        Near you in Liverpool
+      <div className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <h1 className="text-xl font-bold tracking-tight">
+          {category ? category.name : 'Near you in Liverpool'}
+        </h1>
         {!isLoading && !isError && (
-          <span className="ml-2 text-sm font-normal text-muted-foreground">
+          <span className="text-sm font-normal text-muted-foreground">
             {data?.total ?? items.length} item{(data?.total ?? 0) === 1 ? '' : 's'}
           </span>
         )}
-      </h1>
+        {category && (
+          <Link
+            href="/"
+            className="ml-1 inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <X className="size-3" /> Clear
+          </Link>
+        )}
+      </div>
 
       {isError ? (
         <EmptyState
@@ -37,7 +57,7 @@ export function BrowseView() {
         </Grid>
       ) : items.length === 0 ? (
         <EmptyState
-          title="Nothing here yet"
+          title={category ? `Nothing in ${category.name} yet` : 'Nothing here yet'}
           subtitle="Be the first to list something in your area."
         />
       ) : (

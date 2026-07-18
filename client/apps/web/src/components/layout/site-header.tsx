@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { Bell, MessageCircle, Search } from 'lucide-react';
-import { Button, Icon, ThemeToggle } from '@letscycle/ui';
+import { buttonVariants, cn, Icon, ThemeToggle } from '@letscycle/ui';
 import { MobileMenu } from './mobile-menu';
+import { AccountMenu } from './account-menu';
 
 /** Full-width site header: neutral brand bar. The category nav is a separate
  *  strip below (see CategoryNav), so the rule sits under the search, above it. */
@@ -40,19 +41,6 @@ export function SiteHeader() {
         </form>
 
         <nav className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0 sm:gap-2">
-          <Link
-            href="/signup"
-            className="hidden rounded-full px-3 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary md:inline-block"
-          >
-            Sign up
-          </Link>
-          <Link
-            href="/login"
-            className="hidden rounded-full px-3 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary md:inline-block"
-          >
-            Log in
-          </Link>
-
           <button
             type="button"
             aria-label="Notifications"
@@ -71,9 +59,14 @@ export function SiteHeader() {
 
           <ThemeToggle />
 
-          <Button className="ml-1 rounded-full" size="sm">
+          <Link
+            href="/sell"
+            className={cn(buttonVariants({ size: 'sm' }), 'rounded-full')}
+          >
             Sell
-          </Button>
+          </Link>
+
+          <AccountMenu />
         </nav>
     </header>
   );

@@ -15,6 +15,7 @@ export {
   getRefreshToken,
   onSessionExpired,
   notifySessionExpired,
+  onTokensChanged,
 } from './token-store';
 
 // Endpoints
@@ -38,10 +39,17 @@ export {
   type CreateUploadInput,
   type CreateUploadResult,
 } from './endpoints/system';
+export {
+  usersApi,
+  type MyProfile,
+  type PublicProfile,
+  type UpdateProfileInput,
+} from './endpoints/users';
 export { categoriesApi, type Category } from './endpoints/categories';
 export {
   listingsApi,
   resolveImageUrl,
+  uploadToPresignedUrl,
   type ListingSummary,
   type ListingDetail,
   type ListingPhoto,
@@ -52,6 +60,9 @@ export {
   type GeoPoint,
   type SearchListingsParams,
   type SearchListingsResult,
+  type CreateListingInput,
+  type PhotoUploadRequest,
+  type PhotoUploadTicket,
 } from './endpoints/listings';
 
 // Query layer
@@ -59,7 +70,7 @@ export { ApiProvider, createQueryClient } from './query/query-provider';
 export { queryKeys } from './query/keys';
 
 // Hooks
-export { useSignup, useLogin, useLogout } from './hooks/use-auth';
+export { useSignup, useLogin, useLogout, useGoogleLogin } from './hooks/use-auth';
 export {
   useHealth,
   usePublicSettings,

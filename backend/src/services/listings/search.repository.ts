@@ -35,6 +35,9 @@ function buildWhere(f: SearchListingsFilters): Prisma.Sql {
   if (f.categoryId) {
     conditions.push(Prisma.sql`"categoryId" = ${f.categoryId}::uuid`);
   }
+  if (f.sellerId) {
+    conditions.push(Prisma.sql`"sellerId" = ${f.sellerId}::uuid`);
+  }
   if (f.listingType) {
     conditions.push(Prisma.sql`"listingType" = ${f.listingType}::"ListingType"`);
   }

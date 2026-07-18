@@ -75,6 +75,7 @@ export type ListingSort = 'recent' | 'distance' | 'priceAsc' | 'priceDesc' | 're
 
 export interface SearchListingsFilters {
   categoryId?: Uuid;
+  sellerId?: Uuid;
   listingType?: ListingType;
   minPricePence?: number;
   maxPricePence?: number;

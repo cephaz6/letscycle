@@ -3,7 +3,11 @@ import { getEnv } from './shared/config/env.js';
 import { getLogger } from './shared/logging/logger.js';
 import { disconnectDb, getDb } from './shared/db/client.js';
 import { getEventBus } from './shared/events/bus.js';
-import { AuthService, createDummyCognito } from './services/auth/index.js';
+import {
+  AuthService,
+  createDummyCognito,
+  createGoogleVerifier,
+} from './services/auth/index.js';
 import { StorageService, createDummyStorage } from './services/system/index.js';
 import { registerMatchingHandlers } from './services/matching/index.js';
 import {
@@ -36,9 +40,17 @@ const { client: cognitoClient, verifier: tokenVerifier } = createDummyCognito(
   env.AUTH_DEV_TOKEN_SECRET ?? 'letscycle-local-dev-secret',
 );
 
-// Real S3 arrives with AWS infrastructure; the dummy presigner serves dev and CI.
+// "Continue with Google" is enabled once a Google OAuth client ID is set.
+const googleVerifier = env.GOOGLE_CLIENT_ID
+  ? createGoogleVerifier(env.GOOGLE_CLIENT_ID)
+  : undefined;
+
+// Real S3 arrives with AWS infrastructure; the dummy presigner serves dev and
+// CI, pointing presigned URLs at the local dev media store so uploads work.
+const publicApiOrigin = env.PUBLIC_API_ORIGIN ?? `http://localhost:${env.PORT}`;
+const devMediaDir = env.NODE_ENV === 'production' ? undefined : 'uploads';
 const storageService = new StorageService(
-  createDummyStorage(),
+  createDummyStorage(devMediaDir ? publicApiOrigin : undefined),
   env.S3_BUCKET_UPLOADS ?? 'letscycle-uploads-dev',
 );
 
@@ -56,13 +68,14 @@ const app = createApp({
     checkDbReady: async () => {
       await getDb().$queryRaw`SELECT 1`;
     },
-    authService: new AuthService(cognitoClient),
+    authService: new AuthService(cognitoClient, getDb(), googleVerifier),
     tokenVerifier,
     storageService,
     notificationService,
     transactionService,
     payoutService,
     enableRateLimit: true,
+    ...(devMediaDir && { devMediaDir }),
   }),
 });
 

@@ -39,6 +39,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nodejs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 
+# Writable dir for the dev media store (dummy S3 stand-in).
+RUN mkdir uploads && chown nodejs:nodejs uploads
+
 USER nodejs
 EXPOSE 3000
 

@@ -2,9 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Sora } from 'next/font/google';
 import { ThemeProvider, themeInitScript } from '@letscycle/ui';
 import { ApiProvider } from '@letscycle/api-client';
-import { SiteHeader } from '@/components/layout/site-header';
-import { CategoryNav } from '@/components/layout/category-nav';
-import { SiteFooter } from '@/components/layout/site-footer';
+import { AuthProvider } from '@/features/auth';
 import './globals.css';
 
 const sora = Sora({ subsets: ['latin'], variable: '--font-sora' });
@@ -33,12 +31,7 @@ export default function RootLayout({
       <body className="font-sans">
         <ThemeProvider>
           <ApiProvider>
-            <div className="flex min-h-dvh flex-col">
-              <SiteHeader />
-              <CategoryNav />
-              <main className="w-full flex-1">{children}</main>
-              <SiteFooter />
-            </div>
+            <AuthProvider>{children}</AuthProvider>
           </ApiProvider>
         </ThemeProvider>
       </body>

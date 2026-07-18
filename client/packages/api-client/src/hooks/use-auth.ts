@@ -21,6 +21,12 @@ export function useLogin() {
   });
 }
 
+export function useGoogleLogin() {
+  return useMutation<AuthSession, Error, string>({
+    mutationFn: (credential) => authApi.loginWithGoogle(credential),
+  });
+}
+
 export function useLogout() {
   return useMutation<void, Error, void>({
     mutationFn: () => authApi.logout(),
