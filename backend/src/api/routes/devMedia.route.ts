@@ -2,10 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import express, { Router } from 'express';
 import { getDb } from '../../shared/db/client.js';
-import {
-  BadRequestError,
-  NotFoundError,
-} from '../../shared/errors/httpErrors.js';
+import { BadRequestError, NotFoundError } from '../../shared/errors/httpErrors.js';
 import { MAX_UPLOAD_BYTES } from '../../services/system/index.js';
 
 // Dev-only stand-in for S3 object storage, paired with the dummy presigner:
@@ -37,7 +34,7 @@ export function createDevMediaRouter(uploadsDir: string): Router {
     '/dev-uploads',
     express.raw({ type: 'image/*', limit: MAX_UPLOAD_BYTES }),
     async (req, res) => {
-      const key = String(req.query.key ?? '');
+      const key = typeof req.query.key === 'string' ? req.query.key : '';
       if (!key) throw new BadRequestError('Missing key');
 
       const object = await getDb().s3Object.findUnique({ where: { key } });
@@ -60,7 +57,7 @@ export function createDevMediaRouter(uploadsDir: string): Router {
 
   // Public read side (what <img src> hits). Keys are unguessable UUIDs.
   router.get('/media', async (req, res) => {
-    const key = String(req.query.key ?? '');
+    const key = typeof req.query.key === 'string' ? req.query.key : '';
     if (!key) throw new BadRequestError('Missing key');
 
     const contentType = CONTENT_TYPES[path.extname(key).toLowerCase()];
