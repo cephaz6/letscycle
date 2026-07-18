@@ -79,3 +79,17 @@ export {
 } from './hooks/use-system';
 export { useCategories } from './hooks/use-categories';
 export { useListings, useListing } from './hooks/use-listings';
+export {
+  messagesApi,
+  type Conversation,
+  type Message,
+  type ConversationStatus,
+} from './endpoints/messages';
+export {
+  useConversations,
+  useMessages,
+  usePublicProfile,
+  useListingDetail,
+  useStartConversation,
+  useSendMessage,
+} from './hooks/use-messages';
