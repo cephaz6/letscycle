@@ -23,6 +23,8 @@ const envSchema = z.object({
   WEB_PUSH_VAPID_PUBLIC_KEY: z.string().optional(),
   WEB_PUSH_VAPID_PRIVATE_KEY_SECRET_ARN: z.string().optional(),
   FRONTEND_ORIGIN: z.url().optional(),
+  // Browser-reachable origin of this API (dev presigned uploads point here).
+  PUBLIC_API_ORIGIN: z.url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

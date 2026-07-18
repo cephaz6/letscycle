@@ -45,9 +45,12 @@ const googleVerifier = env.GOOGLE_CLIENT_ID
   ? createGoogleVerifier(env.GOOGLE_CLIENT_ID)
   : undefined;
 
-// Real S3 arrives with AWS infrastructure; the dummy presigner serves dev and CI.
+// Real S3 arrives with AWS infrastructure; the dummy presigner serves dev and
+// CI, pointing presigned URLs at the local dev media store so uploads work.
+const publicApiOrigin = env.PUBLIC_API_ORIGIN ?? `http://localhost:${env.PORT}`;
+const devMediaDir = env.NODE_ENV === 'production' ? undefined : 'uploads';
 const storageService = new StorageService(
-  createDummyStorage(),
+  createDummyStorage(devMediaDir ? publicApiOrigin : undefined),
   env.S3_BUCKET_UPLOADS ?? 'letscycle-uploads-dev',
 );
 
@@ -72,6 +75,7 @@ const app = createApp({
     transactionService,
     payoutService,
     enableRateLimit: true,
+    ...(devMediaDir && { devMediaDir }),
   }),
 });
 
