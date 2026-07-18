@@ -2,18 +2,12 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import {
-  ArrowLeft,
-  CalendarDays,
-  MessageCircle,
-  ShieldCheck,
-  Tag,
-  UserRound,
-} from 'lucide-react';
+import { ArrowLeft, CalendarDays, ShieldCheck, Tag, UserRound } from 'lucide-react';
 import { useCategories, useListing } from '@letscycle/api-client';
 import { Badge, buttonVariants, cn, Heading, Skeleton, Text } from '@letscycle/ui';
 import { ListingGallery } from '@/features/listings/components/listing-gallery';
 import { RelatedListings } from '@/features/listings/components/related-listings';
+import { MessageSellerButton } from '@/features/messaging';
 import {
   formatCondition,
   formatPostedAt,
@@ -108,12 +102,10 @@ export default function ListingDetailPage() {
             >
               {isFree ? 'Claim this item' : 'Buy now'}
             </Link>
-            <Link
-              href={`/login?next=/listings/${listing.id}`}
-              className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'rounded-full')}
-            >
-              <MessageCircle className="size-4" /> Message seller
-            </Link>
+            <MessageSellerButton
+              listingId={listing.id}
+              sellerId={listing.sellerId}
+            />
             <Text muted className="text-center text-xs">
               You’ll need an account to {isFree ? 'claim' : 'buy'} — it’s free to join.
             </Text>

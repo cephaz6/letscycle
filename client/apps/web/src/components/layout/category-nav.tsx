@@ -24,7 +24,7 @@ export function CategoryNav() {
       ))}
       <Link
         href="/"
-        className="flex shrink-0 flex-col items-center gap-1.5 text-muted-foreground transition-colors hover:text-primary"
+        className="flex shrink-0 flex-col items-center gap-1.5 py-3 text-muted-foreground transition-colors hover:text-primary"
       >
         <Icon name="LayoutGrid" className="size-6" strokeWidth={1.5} />
         <span className="text-xs font-medium">All</span>

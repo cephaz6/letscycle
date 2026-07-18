@@ -49,13 +49,13 @@ export function SiteHeader() {
             <Bell className="size-5" />
             <span className="absolute right-2 top-2 size-2 rounded-full bg-destructive ring-2 ring-background" />
           </button>
-          <button
-            type="button"
+          <Link
+            href="/messages"
             aria-label="Messages"
             className="hidden size-10 place-items-center rounded-full text-foreground transition-colors hover:bg-accent hover:text-accent-foreground sm:grid"
           >
             <MessageCircle className="size-5" />
-          </button>
+          </Link>
 
           <ThemeToggle />
 
