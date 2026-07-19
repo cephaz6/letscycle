@@ -58,11 +58,17 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <div className="mt-1.5 text-right">
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </Field>
 
-        {login.isError && (
-          <AuthError message="Incorrect email or password." />
-        )}
+        {login.isError && <AuthError message="Incorrect email or password." />}
 
         <Button
           type="submit"
