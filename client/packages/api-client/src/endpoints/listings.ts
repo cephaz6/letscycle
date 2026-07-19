@@ -4,12 +4,7 @@ import { http } from '../http';
 export type ListingCondition = 'new' | 'likeNew' | 'good' | 'fair' | 'poor';
 export type ListingType = 'sell' | 'giveaway';
 export type ListingStatus =
-  | 'draft'
-  | 'active'
-  | 'reserved'
-  | 'completed'
-  | 'expired'
-  | 'removed';
+  'draft' | 'active' | 'reserved' | 'completed' | 'expired' | 'removed';
 
 export interface GeoPoint {
   lat: number;
@@ -70,12 +65,7 @@ export interface SearchListingsResult {
   offset: number;
 }
 
-export type ListingSort =
-  | 'recent'
-  | 'distance'
-  | 'priceAsc'
-  | 'priceDesc'
-  | 'relevance';
+export type ListingSort = 'recent' | 'distance' | 'priceAsc' | 'priceDesc' | 'relevance';
 
 export interface SearchListingsParams {
   categoryId?: string;
@@ -129,6 +119,21 @@ export const listingsApi = {
     return http.get<ListingDetail>(`/listings/${id}`, { auth: false });
   },
 
+  /** The signed-in user's saved (favourited) listings. */
+  listFavourites(): Promise<SearchListingsResult> {
+    return http.get<SearchListingsResult>('/favourites');
+  },
+
+  /** Save a listing to favourites. */
+  favourite(id: string): Promise<void> {
+    return http.post<void>(`/listings/${id}/favourite`);
+  },
+
+  /** Remove a listing from favourites. */
+  unfavourite(id: string): Promise<void> {
+    return http.delete<void>(`/listings/${id}/favourite`);
+  },
+
   /** Create a listing (draft unless publish is true). Requires auth. */
   create(input: CreateListingInput): Promise<ListingDetail> {
     return http.post<ListingDetail>('/listings', { json: input });
@@ -154,17 +159,12 @@ export const listingsApi = {
 
   /** Step 3: confirm the bytes landed so the photo becomes visible. */
   confirmPhoto(listingId: string, photoId: string): Promise<ListingDetail> {
-    return http.post<ListingDetail>(
-      `/listings/${listingId}/photos/${photoId}/confirm`,
-    );
+    return http.post<ListingDetail>(`/listings/${listingId}/photos/${photoId}/confirm`);
   },
 };
 
 /** Step 2 of the photo flow: PUT the file to the presigned URL. */
-export async function uploadToPresignedUrl(
-  uploadUrl: string,
-  file: Blob,
-): Promise<void> {
+export async function uploadToPresignedUrl(uploadUrl: string, file: Blob): Promise<void> {
   const res = await fetch(uploadUrl, {
     method: 'PUT',
     headers: { 'Content-Type': file.type },

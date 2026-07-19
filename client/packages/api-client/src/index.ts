@@ -78,7 +78,12 @@ export {
   useAcceptCurrentTerms,
 } from './hooks/use-system';
 export { useCategories } from './hooks/use-categories';
-export { useListings, useListing } from './hooks/use-listings';
+export {
+  useListings,
+  useListing,
+  useFavourites,
+  useToggleFavourite,
+} from './hooks/use-listings';
 export {
   messagesApi,
   type Conversation,
