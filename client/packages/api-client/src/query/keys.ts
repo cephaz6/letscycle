@@ -19,4 +19,9 @@ export const queryKeys = {
   conversations: ['conversations'] as const,
   messages: (conversationId: string) =>
     ['conversations', conversationId, 'messages'] as const,
+  transactions: {
+    mine: ['transactions', 'me'] as const,
+    detail: (id: string) => ['transactions', 'detail', id] as const,
+  },
+  payoutStatus: ['payouts', 'status'] as const,
 };

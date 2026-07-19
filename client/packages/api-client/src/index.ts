@@ -93,3 +93,20 @@ export {
   useStartConversation,
   useSendMessage,
 } from './hooks/use-messages';
+export {
+  transactionsApi,
+  type Transaction,
+  type TransactionStatus,
+  type PayoutStatus,
+  type Dispute,
+} from './endpoints/transactions';
+export {
+  useMyTransactions,
+  useTransaction,
+  useCreateTransaction,
+  useConfirmTransaction,
+  useCompleteTransaction,
+  useDisputeTransaction,
+  usePayoutStatus,
+  useOnboardPayouts,
+} from './hooks/use-transactions';
