@@ -38,6 +38,11 @@ function buildWhere(f: SearchListingsFilters): Prisma.Sql {
   if (f.sellerId) {
     conditions.push(Prisma.sql`"sellerId" = ${f.sellerId}::uuid`);
   }
+  if (f.favouritedByUserId) {
+    conditions.push(
+      Prisma.sql`id IN (SELECT "listingId" FROM "favourite" WHERE "userId" = ${f.favouritedByUserId}::uuid)`,
+    );
+  }
   if (f.listingType) {
     conditions.push(Prisma.sql`"listingType" = ${f.listingType}::"ListingType"`);
   }
