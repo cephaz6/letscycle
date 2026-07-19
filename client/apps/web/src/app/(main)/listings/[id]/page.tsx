@@ -7,12 +7,8 @@ import { useCategories, useListing } from '@letscycle/api-client';
 import { Badge, buttonVariants, cn, Heading, Skeleton, Text } from '@letscycle/ui';
 import { ListingGallery } from '@/features/listings/components/listing-gallery';
 import { RelatedListings } from '@/features/listings/components/related-listings';
-import { MessageSellerButton } from '@/features/messaging';
-import {
-  formatCondition,
-  formatPostedAt,
-  formatPrice,
-} from '@/features/listings/format';
+import { ListingActions } from '@/features/listings/components/listing-actions';
+import { formatCondition, formatPostedAt, formatPrice } from '@/features/listings/format';
 
 export default function ListingDetailPage() {
   const params = useParams<{ id: string }>();
@@ -94,22 +90,12 @@ export default function ListingDetailPage() {
             </span>
           </Link>
 
-          {/* Purchase / claim — requires auth */}
-          <div className="mt-5 flex flex-col gap-2">
-            <Link
-              href={`/login?next=/listings/${listing.id}`}
-              className={cn(buttonVariants({ size: 'lg' }), 'rounded-full')}
-            >
-              {isFree ? 'Claim this item' : 'Buy now'}
-            </Link>
-            <MessageSellerButton
-              listingId={listing.id}
-              sellerId={listing.sellerId}
-            />
-            <Text muted className="text-center text-xs">
-              You’ll need an account to {isFree ? 'claim' : 'buy'} — it’s free to join.
-            </Text>
-          </div>
+          {/* Purchase / claim */}
+          <ListingActions
+            listingId={listing.id}
+            sellerId={listing.sellerId}
+            listingType={listing.listingType}
+          />
 
           {/* Buyer protection */}
           <div className="mt-5 rounded-xl border border-border bg-muted/40 p-4">

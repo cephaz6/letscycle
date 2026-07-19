@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { LogOut, UserRound } from 'lucide-react';
+import { LogOut, Receipt, UserRound } from 'lucide-react';
 import { buttonVariants, cn } from '@letscycle/ui';
 import { useAuth, useSignOut } from '@/features/auth';
 
@@ -33,7 +33,10 @@ export function AccountMenu() {
         </Link>
         <Link
           href="/login"
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'rounded-full')}
+          className={cn(
+            buttonVariants({ variant: 'outline', size: 'sm' }),
+            'rounded-full',
+          )}
         >
           Log in
         </Link>
@@ -72,6 +75,13 @@ export function AccountMenu() {
               className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-accent"
             >
               <UserRound className="size-4" /> My profile
+            </Link>
+            <Link
+              href="/transactions"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-accent"
+            >
+              <Receipt className="size-4" /> My orders
             </Link>
             <button
               type="button"
