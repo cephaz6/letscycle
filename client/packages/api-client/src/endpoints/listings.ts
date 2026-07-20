@@ -147,6 +147,11 @@ export const listingsApi = {
     return http.patch<ListingDetail>(`/listings/${id}`, { json: input });
   },
 
+  /** Soft-remove a listing (sets status to "removed"). Owner only. */
+  remove(id: string): Promise<void> {
+    return http.delete<void>(`/listings/${id}`);
+  },
+
   /** Step 1 of the photo flow: reserve a slot and get a presigned URL. */
   requestPhotoUpload(
     listingId: string,
