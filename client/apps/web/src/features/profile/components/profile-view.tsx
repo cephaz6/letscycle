@@ -31,17 +31,8 @@ import {
 import { Badge, Button, buttonVariants, cn, Skeleton, Text } from '@letscycle/ui';
 import { ListingCard } from '@/features/listings/components/listing-card';
 import { useAuth, useSignOut } from '@/features/auth';
+import { AvatarUpload } from './avatar-upload';
 import { EditProfileDialog } from './edit-profile-dialog';
-
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
 
 const TABS = ['Listings', 'Reviews', 'About'] as const;
 type Tab = (typeof TABS)[number];
@@ -76,20 +67,11 @@ export function ProfileView() {
         <div className="px-5 pb-6 sm:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">
-              <div className="relative -mt-14 sm:-mt-16">
-                <div className="grid size-28 place-items-center rounded-full bg-linear-to-br from-primary to-emerald-600 text-3xl font-bold text-primary-foreground shadow-lg ring-4 ring-card">
-                  {initials(user.displayName)}
-                </div>
-                {verified && (
-                  <span className="absolute bottom-1 right-1 grid size-7 place-items-center rounded-full bg-card ring-2 ring-card">
-                    <BadgeCheck className="size-6 fill-success text-card" />
-                  </span>
-                )}
+              <div className="-mt-14 sm:-mt-16">
+                <AvatarUpload className="size-28" />
               </div>
               <div className="pb-1">
-                <h1 className="text-2xl font-bold tracking-tight">
-                  {user.displayName}
-                </h1>
+                <h1 className="text-2xl font-bold tracking-tight">{user.displayName}</h1>
                 <p className="text-sm text-muted-foreground">
                   @{user.email.split('@')[0]}
                 </p>

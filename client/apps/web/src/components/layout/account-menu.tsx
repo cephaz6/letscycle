@@ -5,16 +5,7 @@ import Link from 'next/link';
 import { Heart, LogOut, Receipt, UserRound } from 'lucide-react';
 import { buttonVariants, cn } from '@letscycle/ui';
 import { useAuth, useSignOut } from '@/features/auth';
-
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
+import { Avatar } from '@/components/avatar';
 
 /** Header account area: sign-in links when anonymous, avatar menu when signed in. */
 export function AccountMenu() {
@@ -51,9 +42,12 @@ export function AccountMenu() {
         aria-label="Account menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="grid size-9 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
       >
-        {initials(user.displayName) || <UserRound className="size-5" />}
+        <Avatar
+          name={user.displayName}
+          avatarUrl={user.avatarUrl}
+          className="size-9 text-xs"
+        />
       </button>
 
       {open && (

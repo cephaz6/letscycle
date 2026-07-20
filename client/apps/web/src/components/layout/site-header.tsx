@@ -1,9 +1,10 @@
 import Link from 'next/link';
-import { Bell, Heart, Search } from 'lucide-react';
+import { Heart, Search } from 'lucide-react';
 import { buttonVariants, cn, Icon, ThemeToggle } from '@letscycle/ui';
 import { MobileMenu } from './mobile-menu';
 import { AccountMenu } from './account-menu';
 import { MessagesNavLink } from '@/features/messaging';
+import { NotificationsBell } from '@/features/notifications';
 
 /** Full-width site header: neutral brand bar. The category nav is a separate
  *  strip below (see CategoryNav), so the rule sits under the search, above it. */
@@ -42,14 +43,7 @@ export function SiteHeader() {
       </form>
 
       <nav className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0 sm:gap-2">
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative grid size-10 place-items-center rounded-full text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-        >
-          <Bell className="size-5" />
-          <span className="absolute right-2 top-2 size-2 rounded-full bg-destructive ring-2 ring-background" />
-        </button>
+        <NotificationsBell />
         <Link
           href="/wishlist"
           aria-label="Saved items"

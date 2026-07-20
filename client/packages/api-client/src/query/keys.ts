@@ -13,6 +13,7 @@ export const queryKeys = {
     detail: (id: string) => ['listings', 'detail', id] as const,
   },
   favourites: ['favourites'] as const,
+  notifications: ['notifications'] as const,
   user: {
     me: ['user', 'me'] as const,
     public: (id: string) => ['user', 'public', id] as const,

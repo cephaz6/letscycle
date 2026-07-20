@@ -28,6 +28,7 @@ export interface GoogleProfile {
   email: string;
   emailVerified: boolean;
   name: string;
+  pictureUrl?: string;
 }
 
 export interface GoogleVerifier {

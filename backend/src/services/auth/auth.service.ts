@@ -53,7 +53,12 @@ export class AuthService {
 
     if (!user) {
       user = await createUser(
-        { email: profile.email, displayName: profile.name, cognitoSub: googleSub },
+        {
+          email: profile.email,
+          displayName: profile.name,
+          cognitoSub: googleSub,
+          ...(profile.pictureUrl ? { avatarUrl: profile.pictureUrl } : {}),
+        },
         this.db,
       );
     } else if (user.accountStatus !== 'active') {

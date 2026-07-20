@@ -115,3 +115,9 @@ export {
   usePayoutStatus,
   useOnboardPayouts,
 } from './hooks/use-transactions';
+export {
+  notificationsApi,
+  type AppNotification,
+  type NotificationType,
+} from './endpoints/notifications';
+export { useNotifications, useMarkNotificationRead } from './hooks/use-notifications';
