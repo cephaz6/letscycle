@@ -18,6 +18,7 @@ export const queryKeys = {
   user: {
     me: ['user', 'me'] as const,
     public: (id: string) => ['user', 'public', id] as const,
+    reviews: (id: string) => ['user', 'reviews', id] as const,
   },
   conversations: ['conversations'] as const,
   messages: (conversationId: string) =>

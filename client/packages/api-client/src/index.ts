@@ -43,8 +43,16 @@ export {
   usersApi,
   type MyProfile,
   type PublicProfile,
+  type PublicProfileStats,
   type UpdateProfileInput,
 } from './endpoints/users';
+export {
+  reviewsApi,
+  type PublicReview,
+  type Review,
+  type SubmitReviewInput,
+} from './endpoints/reviews';
+export { useUserReviews, useSubmitReview } from './hooks/use-reviews';
 export { categoriesApi, type Category } from './endpoints/categories';
 export {
   listingsApi,

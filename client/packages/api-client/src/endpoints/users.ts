@@ -7,6 +7,7 @@ export interface MyProfile {
   phone: string | null;
   displayName: string;
   avatarUrl: string | null;
+  bio: string | null;
   accountStatus: 'active' | 'suspended' | 'deleted';
   emailVerifiedAt: string | null;
   createdAt: string;
@@ -17,6 +18,15 @@ export interface UpdateProfileInput {
   displayName?: string;
   phone?: string | null;
   avatarUrl?: string | null;
+  bio?: string | null;
+}
+
+/** Headline numbers shown on a member's public profile. */
+export interface PublicProfileStats {
+  listingsCount: number;
+  salesCount: number;
+  reviewsCount: number;
+  averageRating: number | null;
 }
 
 /** Public profile (GET /users/:userId). */
@@ -24,8 +34,10 @@ export interface PublicProfile {
   id: string;
   displayName: string;
   avatarUrl: string | null;
+  bio: string | null;
   isEmailVerified: boolean;
   memberSince: string;
+  stats: PublicProfileStats;
 }
 
 export const usersApi = {
@@ -39,9 +51,9 @@ export const usersApi = {
     return http.patch<MyProfile>('/users/me', { json: input });
   },
 
-  /** A public view of another user. */
+  /** A public view of another user. No auth required — anyone can view. */
   getById(userId: string): Promise<PublicProfile> {
-    return http.get<PublicProfile>(`/users/${userId}`);
+    return http.get<PublicProfile>(`/users/${userId}`, { auth: false });
   },
 
   /** GDPR data export (JSON of everything we hold on the user). */
