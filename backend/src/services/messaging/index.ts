@@ -6,6 +6,7 @@ export {
 } from './messaging.service.js';
 export type {
   ConversationView,
+  ConversationListItem,
   MessageView,
   ConversationStatus,
   SendMessageInput,

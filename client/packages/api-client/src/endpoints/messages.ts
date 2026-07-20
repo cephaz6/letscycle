@@ -10,6 +10,7 @@ export interface Conversation {
   status: ConversationStatus;
   lastMessageAt: string | null;
   createdAt: string;
+  unreadCount: number;
 }
 
 export interface Message {
@@ -41,11 +42,7 @@ export const messagesApi = {
   },
 
   /** Messages in a conversation, oldest first (opening also marks read). */
-  async getMessages(
-    conversationId: string,
-    limit = 50,
-    offset = 0,
-  ): Promise<Message[]> {
+  async getMessages(conversationId: string, limit = 50, offset = 0): Promise<Message[]> {
     const page = await http.get<MessagesPage>(
       `/conversations/${conversationId}/messages`,
       { query: { limit, offset } },

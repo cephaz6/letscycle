@@ -6,11 +6,13 @@ import { usersApi, type PublicProfile } from '../endpoints/users';
 import { listingsApi, type ListingDetail } from '../endpoints/listings';
 import { queryKeys } from '../query/keys';
 
-export function useConversations() {
+export function useConversations(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.conversations,
     queryFn: () => messagesApi.listConversations(),
-    staleTime: 15_000,
+    enabled: options?.enabled ?? true,
+    staleTime: 10_000,
+    refetchInterval: 20_000, // keep the unread badge fresh
   });
 }
 

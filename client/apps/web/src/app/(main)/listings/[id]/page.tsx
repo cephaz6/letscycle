@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, CalendarDays, ShieldCheck, Tag, UserRound } from 'lucide-react';
+import { ArrowLeft, CalendarDays, ShieldCheck, Tag } from 'lucide-react';
 import { useCategories, useListing } from '@letscycle/api-client';
 import { Badge, buttonVariants, cn, Heading, Skeleton, Text } from '@letscycle/ui';
 import { ListingGallery } from '@/features/listings/components/listing-gallery';
 import { RelatedListings } from '@/features/listings/components/related-listings';
 import { ListingActions } from '@/features/listings/components/listing-actions';
+import { SellerCard } from '@/features/listings/components/seller-card';
 import { formatCondition, formatPostedAt, formatPrice } from '@/features/listings/format';
 
 export default function ListingDetailPage() {
@@ -75,20 +76,7 @@ export default function ListingDetailPage() {
           </div>
 
           {/* Seller */}
-          <Link
-            href={`/u/${listing.sellerId}`}
-            className="mt-5 flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-accent/50"
-          >
-            <span className="grid size-10 place-items-center rounded-full bg-muted">
-              <UserRound className="size-5 text-muted-foreground" />
-            </span>
-            <span className="flex-1">
-              <span className="block text-sm font-semibold">Seller</span>
-              <span className="block text-xs text-muted-foreground">
-                View profile & trust score
-              </span>
-            </span>
-          </Link>
+          <SellerCard sellerId={listing.sellerId} />
 
           {/* Purchase / claim */}
           <ListingActions

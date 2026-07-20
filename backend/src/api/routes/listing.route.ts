@@ -167,6 +167,18 @@ export function createListingRouter(deps: ListingRouterDeps): Router {
     );
   });
 
+  // A user's own saved listings (scoped to the caller — not a public filter).
+  router.get('/favourites', auth, async (req, res) => {
+    res.status(200).json(
+      await searchListings({
+        favouritedByUserId: requireUserId(req),
+        sort: 'recent',
+        limit: 100,
+        offset: 0,
+      }),
+    );
+  });
+
   router.get('/listings/:id', optional, async (req, res) => {
     const id = uuidParam(req, 'id');
     const source = (req.query.source as ViewSource | undefined) ?? 'direct';

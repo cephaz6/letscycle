@@ -1,17 +1,37 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Heart, ImageOff, MapPin } from 'lucide-react';
-import { resolveImageUrl, type ListingSummary } from '@letscycle/api-client';
+import {
+  resolveImageUrl,
+  useFavourites,
+  useToggleFavourite,
+  type ListingSummary,
+} from '@letscycle/api-client';
 import { Badge, cn } from '@letscycle/ui';
+import { useAuth } from '@/features/auth';
 import { formatCondition, formatDistance, formatPrice } from '../format';
 
 export function ListingCard({ listing }: { listing: ListingSummary }) {
-  const [liked, setLiked] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const { data: favourites } = useFavourites({ enabled: isAuthenticated });
+  const toggle = useToggleFavourite();
+
   const isFree = listing.listingType === 'giveaway' || listing.pricePence === null;
   const image = resolveImageUrl(listing.coverPhotoKey);
   const distance = formatDistance(listing.distanceMetres);
+  const saved = Boolean(favourites?.items.some((l) => l.id === listing.id));
+
+  function onHeart(e: React.MouseEvent) {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      router.push(`/login?next=/listings/${listing.id}`);
+      return;
+    }
+    toggle.mutate({ listing, favourite: !saved });
+  }
 
   return (
     <Link href={`/listings/${listing.id}`} className="group block">
@@ -38,15 +58,12 @@ export function ListingCard({ listing }: { listing: ListingSummary }) {
 
         <button
           type="button"
-          aria-label={liked ? 'Remove from wishlist' : 'Save to wishlist'}
-          aria-pressed={liked}
-          onClick={(e) => {
-            e.preventDefault();
-            setLiked((v) => !v);
-          }}
+          aria-label={saved ? 'Remove from saved' : 'Save item'}
+          aria-pressed={saved}
+          onClick={onHeart}
           className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-background/80 text-foreground backdrop-blur transition hover:bg-background"
         >
-          <Heart className={cn('size-4', liked && 'fill-destructive text-destructive')} />
+          <Heart className={cn('size-4', saved && 'fill-destructive text-destructive')} />
         </button>
       </div>
 

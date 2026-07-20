@@ -9,7 +9,7 @@ import {
   usePublicProfile,
   type Conversation,
 } from '@letscycle/api-client';
-import { Skeleton, Text } from '@letscycle/ui';
+import { cn, Skeleton, Text } from '@letscycle/ui';
 import { useAuth } from '@/features/auth';
 import { formatPostedAt } from '@/features/listings/format';
 import { initials } from '../initials';
@@ -65,6 +65,7 @@ function ConversationRow({
   const { data: other } = usePublicProfile(otherId);
   const { data: listing } = useListingDetail(conversation.listingId);
   const cover = listing?.photos[0] ? resolveImageUrl(listing.photos[0].key) : null;
+  const unread = conversation.unreadCount > 0;
 
   return (
     <li>
@@ -81,22 +82,33 @@ function ConversationRow({
               {other?.displayName ?? 'Member'}
             </span>
             {conversation.lastMessageAt && (
-              <span className="shrink-0 text-xs text-muted-foreground">
+              <span
+                className={cn(
+                  'shrink-0 text-xs',
+                  unread ? 'font-semibold text-primary' : 'text-muted-foreground',
+                )}
+              >
                 {formatPostedAt(conversation.lastMessageAt)}
               </span>
             )}
           </span>
-          <span className="block truncate text-sm text-muted-foreground">
+          <span
+            className={cn(
+              'block truncate text-sm',
+              unread ? 'font-medium text-foreground' : 'text-muted-foreground',
+            )}
+          >
             {listing?.title ?? 'Listing'}
           </span>
         </span>
+        {unread && (
+          <span className="grid min-w-[20px] shrink-0 place-items-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+            {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
+          </span>
+        )}
         {cover && (
           // eslint-disable-next-line @next/next/no-img-element -- remote/media photo
-          <img
-            src={cover}
-            alt=""
-            className="size-12 shrink-0 rounded-lg object-cover"
-          />
+          <img src={cover} alt="" className="size-12 shrink-0 rounded-lg object-cover" />
         )}
       </Link>
     </li>

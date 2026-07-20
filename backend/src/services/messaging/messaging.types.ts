@@ -12,6 +12,11 @@ export interface ConversationView {
   createdAt: Date;
 }
 
+// A conversation in the caller's list, with their unread message count.
+export interface ConversationListItem extends ConversationView {
+  unreadCount: number;
+}
+
 export interface MessageView {
   id: Uuid;
   conversationId: Uuid;
