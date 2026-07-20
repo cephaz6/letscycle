@@ -8,6 +8,7 @@ const HIDE_ON = [
   '/me',
   '/sell',
   '/wishlist',
+  '/wanted',
   '/settings',
   '/messages',
   '/transactions',

@@ -123,3 +123,19 @@ export {
   type NotificationType,
 } from './endpoints/notifications';
 export { useNotifications, useMarkNotificationRead } from './hooks/use-notifications';
+export {
+  wishlistsApi,
+  type WishlistItem,
+  type WishlistItemStatus,
+  type ListingTypePreference,
+  type CreateWishlistItemInput,
+  type UpdateWishlistItemInput,
+} from './endpoints/wishlists';
+export {
+  useWishlist,
+  useCreateWishlistItem,
+  useUpdateWishlistItem,
+  useDeleteWishlistItem,
+} from './hooks/use-wishlists';
+export { matchesApi, type MatchInterestResult } from './endpoints/matches';
+export { useExpressInterest } from './hooks/use-matches';

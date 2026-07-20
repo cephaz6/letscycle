@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Heart, LogOut, Receipt, UserRound } from 'lucide-react';
+import { Heart, LogOut, Receipt, Sparkles, UserRound } from 'lucide-react';
 import { buttonVariants, cn } from '@letscycle/ui';
 import { useAuth, useSignOut } from '@/features/auth';
 import { Avatar } from '@/components/avatar';
@@ -76,6 +76,13 @@ export function AccountMenu() {
               className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-accent"
             >
               <Heart className="size-4" /> Saved items
+            </Link>
+            <Link
+              href="/wanted"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-accent"
+            >
+              <Sparkles className="size-4" /> Wanted
             </Link>
             <Link
               href="/transactions"

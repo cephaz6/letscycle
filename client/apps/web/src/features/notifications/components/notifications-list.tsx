@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { BellOff, CheckCheck } from 'lucide-react';
+import { BellOff, Check, CheckCheck, Sparkles } from 'lucide-react';
 import {
+  useExpressInterest,
   useMarkNotificationRead,
   useNotifications,
   type AppNotification,
 } from '@letscycle/api-client';
-import { cn, Skeleton, Text } from '@letscycle/ui';
+import { Button, cn, Skeleton, Text } from '@letscycle/ui';
 import { formatPostedAt } from '@/features/listings/format';
 import { notificationMeta } from '../notification-meta';
 
@@ -70,16 +71,18 @@ function NotificationRow({
   const meta = notificationMeta(notification);
   const Icon = meta.icon;
   const unread = !notification.readAt;
+  const candidateId =
+    notification.type === 'matchFound' &&
+    typeof notification.payload.matchCandidateId === 'string'
+      ? notification.payload.matchCandidateId
+      : null;
 
   return (
-    <li>
+    <li className={unread ? 'bg-primary/5' : 'bg-card'}>
       <Link
         href={meta.href}
         onClick={onOpen}
-        className={cn(
-          'flex items-start gap-3 p-4 transition-colors hover:bg-accent/50',
-          unread ? 'bg-primary/5' : 'bg-card',
-        )}
+        className="flex items-start gap-3 p-4 transition-colors hover:bg-accent/50"
       >
         <span
           className={cn(
@@ -102,7 +105,37 @@ function NotificationRow({
           </span>
         </span>
       </Link>
+      {candidateId && (
+        <div className="px-4 pb-3 pl-17">
+          <MatchInterestAction candidateId={candidateId} />
+        </div>
+      )}
     </li>
+  );
+}
+
+function MatchInterestAction({ candidateId }: { candidateId: string }) {
+  const interest = useExpressInterest();
+  const done = interest.isSuccess;
+
+  if (done) {
+    return (
+      <p className="flex items-center gap-1.5 text-sm font-medium text-primary">
+        <Check className="size-4" /> Interest sent — we’ve let the seller know.
+      </p>
+    );
+  }
+
+  return (
+    <Button
+      size="sm"
+      className="rounded-full"
+      disabled={interest.isPending}
+      onClick={() => interest.mutate(candidateId)}
+    >
+      <Sparkles className="size-4" />
+      {interest.isPending ? 'Sending…' : 'I’m interested'}
+    </Button>
   );
 }
 
