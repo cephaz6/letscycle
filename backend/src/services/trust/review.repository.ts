@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import type { Tx } from '../../shared/db/transaction.js';
-import type { ReviewView } from './trust.types.js';
+import type { PublicReviewView, ReviewView } from './trust.types.js';
 
 type Db = PrismaClient | Tx;
 
@@ -59,4 +59,33 @@ export async function listForReviewer(
     select: reviewSelect,
     orderBy: { createdAt: 'desc' },
   });
+}
+
+// Public profile: reviews received, each with the reviewer's safe display info.
+export async function listForRevieweeWithReviewer(
+  db: Db,
+  revieweeUserId: string,
+): Promise<PublicReviewView[]> {
+  const rows = await db.review.findMany({
+    where: { revieweeUserId },
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      reviewer: { select: { id: true, displayName: true, avatarUrl: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    comment: r.comment,
+    createdAt: r.createdAt,
+    reviewer: {
+      id: r.reviewer.id,
+      displayName: r.reviewer.displayName,
+      avatarUrl: r.reviewer.avatarUrl,
+    },
+  }));
 }

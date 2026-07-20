@@ -206,6 +206,7 @@ model User {
   phone                      String?
   displayName                String
   avatarUrl                  String?
+  bio                        String?                                @db.VarChar(500)
   homeLocation               Unsupported("geography(Point, 4326)")?
   homeLocationAccuracyMetres Int?
   accountStatus              AccountStatus                          @default(active)
@@ -599,16 +600,16 @@ model PayoutAccount {
 }
 
 model Dispute {
-  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  transactionId  String        @db.Uuid
-  openedByUserId String        @db.Uuid
-  reason         String
-  description    String
-  status         DisputeStatus @default(open)
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transactionId   String        @db.Uuid
+  openedByUserId  String        @db.Uuid
+  reason          String
+  description     String
+  status          DisputeStatus @default(open)
   resolutionNotes String?
-  resolvedAt     DateTime?     @db.Timestamptz(6)
-  createdAt      DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
+  resolvedAt      DateTime?     @db.Timestamptz(6)
+  createdAt       DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
 
   transaction Transaction @relation(fields: [transactionId], references: [id])
   openedBy    User        @relation(fields: [openedByUserId], references: [id])

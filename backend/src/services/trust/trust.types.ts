@@ -35,6 +35,20 @@ export interface ReviewView {
   createdAt: Date;
 }
 
+// A received review as shown publicly on a profile — the reviewer's safe
+// display info, no transaction linkage.
+export interface PublicReviewView {
+  id: Uuid;
+  rating: number;
+  comment: string | null;
+  createdAt: Date;
+  reviewer: {
+    id: Uuid;
+    displayName: string;
+    avatarUrl: string | null;
+  };
+}
+
 export interface RaiseFlagInput {
   targetType: FlagTargetType;
   targetId: Uuid;

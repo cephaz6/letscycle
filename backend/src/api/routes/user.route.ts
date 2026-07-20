@@ -40,6 +40,7 @@ const updateProfileSchema = z
       .nullable(),
     // A media key (uploaded avatar) or a full URL (e.g. Google profile photo).
     avatarUrl: z.string().min(1).max(2048).nullable(),
+    bio: z.string().trim().max(500).nullable(),
     homeLocation: homeLocationSchema.nullable(),
     preferences: preferencesSchema,
   })
@@ -94,7 +95,8 @@ export function createUserRouter(verifier: TokenVerifier): Router {
     res.status(204).end();
   });
 
-  router.get('/users/:userId', auth, async (req, res) => {
+  // Public — anyone can view a member's profile (safe fields + headline stats).
+  router.get('/users/:userId', async (req, res) => {
     const userId = z.uuid().safeParse(req.params.userId);
     if (!userId.success) {
       throw new BadRequestError('Invalid user id');

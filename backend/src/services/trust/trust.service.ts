@@ -10,6 +10,7 @@ import * as flagRepo from './flag.repository.js';
 import { TRUST_IMPACT, computeTrustScore, reviewEventType } from './scorer.js';
 import type {
   FlagView,
+  PublicReviewView,
   RaiseFlagInput,
   ReviewView,
   SubmitReviewInput,
@@ -65,6 +66,14 @@ export async function getUserTrustScore(
   db: PrismaClient = getDb(),
 ): Promise<TrustScoreView | null> {
   return repo.getTrustScore(db, userId);
+}
+
+// Public profile: reviews a user has received, with reviewer display info.
+export async function listPublicReviews(
+  userId: string,
+  db: PrismaClient = getDb(),
+): Promise<PublicReviewView[]> {
+  return reviewRepo.listForRevieweeWithReviewer(db, userId);
 }
 
 // For privacy export: reviews the user gave and received.

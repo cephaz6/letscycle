@@ -41,6 +41,7 @@ export interface MyProfile {
   phone: string | null;
   displayName: string;
   avatarUrl: string | null;
+  bio: string | null;
   homeLocation: HomeLocation | null;
   accountStatus: 'active' | 'suspended' | 'deleted';
   emailVerifiedAt: Date | null;
@@ -50,13 +51,23 @@ export interface MyProfile {
   updatedAt: Date;
 }
 
+// Public headline numbers shown on a member's profile.
+export interface PublicProfileStats {
+  listingsCount: number; // active listings
+  salesCount: number; // completed sales as seller
+  reviewsCount: number; // reviews received
+  averageRating: number | null; // mean rating received, null if none
+}
+
 // Safe public view — no PII (email, phone, exact location) ever leaves here.
 export interface PublicProfile {
   id: UserId;
   displayName: string;
   avatarUrl: string | null;
+  bio: string | null;
   isEmailVerified: boolean;
   memberSince: Date;
+  stats: PublicProfileStats;
 }
 
 // Partial: only the keys present are changed. Email is owned by Cognito and
@@ -65,6 +76,7 @@ export interface UpdateProfileInput {
   displayName?: string;
   phone?: string | null;
   avatarUrl?: string | null;
+  bio?: string | null;
   homeLocation?: HomeLocation | null;
   preferences?: UserPreferences;
 }
