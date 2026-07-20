@@ -1,19 +1,73 @@
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { SignJWT, jwtVerify } from 'jose';
 import type { CognitoClient, TokenClaims, TokenVerifier } from './auth.types.js';
 
 const ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 
+interface StoredAccount {
+  passwordHash: string;
+  cognitoSub: string;
+}
+
+export interface DummyCognito {
+  client: CognitoClient;
+  verifier: TokenVerifier;
+  /**
+   * Dev-only repair: ensure an email/password account exists for an already
+   * registered user, without overwriting one that's already stored. Used at
+   * boot to restore accounts whose in-memory password was lost on restart
+   * (before persistence) so existing DB users can sign in again. Returns the
+   * number of accounts added.
+   */
+  seedAccounts: (
+    entries: { email: string; cognitoSub: string; password: string }[],
+  ) => number;
+}
+
 // In-memory Cognito stand-in for dev and tests: real JWTs (HS256, shared dev
 // secret) so the auth middleware exercises genuine verification. The real
 // implementation uses Cognito's hosted pool and RS256 JWKS behind the same
 // interfaces. Never used in production — server boot forbids it.
-export function createDummyCognito(secret: string): {
-  client: CognitoClient;
-  verifier: TokenVerifier;
-} {
+//
+// Accounts optionally persist to a JSON file (dev docker volume) so a container
+// restart no longer wipes every email/password login. Passwords are stored as
+// an HMAC, not plaintext.
+export function createDummyCognito(
+  secret: string,
+  options: { persistPath?: string } = {},
+): DummyCognito {
   const key = new TextEncoder().encode(secret);
-  const accounts = new Map<string, { password: string; cognitoSub: string }>();
+  const accounts = new Map<string, StoredAccount>();
+  const persistPath = options.persistPath;
+
+  function hashPassword(password: string): string {
+    return createHmac('sha256', secret).update(password).digest('hex');
+  }
+
+  function load(): void {
+    if (!persistPath || !existsSync(persistPath)) return;
+    try {
+      const raw = JSON.parse(readFileSync(persistPath, 'utf8')) as Record<
+        string,
+        StoredAccount
+      >;
+      for (const [email, account] of Object.entries(raw)) {
+        accounts.set(email, account);
+      }
+    } catch {
+      // Corrupt or empty file — start from an empty store.
+    }
+  }
+
+  function save(): void {
+    if (!persistPath) return;
+    mkdirSync(dirname(persistPath), { recursive: true });
+    writeFileSync(persistPath, JSON.stringify(Object.fromEntries(accounts), null, 2));
+  }
+
+  load();
 
   async function mintAccessToken(cognitoSub: string, email: string): Promise<string> {
     return new SignJWT({ email, 'cognito:groups': ['user'] })
@@ -30,13 +84,14 @@ export function createDummyCognito(secret: string): {
         return Promise.reject(new Error('UsernameExistsException'));
       }
       const cognitoSub = randomUUID();
-      accounts.set(email, { password, cognitoSub });
+      accounts.set(email, { passwordHash: hashPassword(password), cognitoSub });
+      save();
       return Promise.resolve({ cognitoSub });
     },
 
     async initiateAuth({ email, password }) {
       const account = accounts.get(email);
-      if (!account || account.password !== password) {
+      if (!account || account.passwordHash !== hashPassword(password)) {
         throw new Error('NotAuthorizedException');
       }
       return {
@@ -47,8 +102,8 @@ export function createDummyCognito(secret: string): {
     },
 
     async refreshSession({ cognitoSub }) {
-      // Federated (e.g. Google) users aren't in the in-memory accounts map;
-      // still mint a fresh token — the email claim is best-effort.
+      // Federated (e.g. Google) users aren't in the accounts map; still mint a
+      // fresh token — the email claim is best-effort.
       const entry = [...accounts.entries()].find(
         ([, account]) => account.cognitoSub === cognitoSub,
       );
@@ -81,5 +136,18 @@ export function createDummyCognito(secret: string): {
     },
   };
 
-  return { client, verifier };
+  function seedAccounts(
+    entries: { email: string; cognitoSub: string; password: string }[],
+  ): number {
+    let added = 0;
+    for (const { email, cognitoSub, password } of entries) {
+      if (accounts.has(email)) continue;
+      accounts.set(email, { passwordHash: hashPassword(password), cognitoSub });
+      added += 1;
+    }
+    if (added > 0) save();
+    return added;
+  }
+
+  return { client, verifier, seedAccounts };
 }

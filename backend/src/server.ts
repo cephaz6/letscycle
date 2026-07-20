@@ -36,9 +36,16 @@ if (env.COGNITO_USER_POOL_ID) {
   throw new Error('Real Cognito client is not implemented yet (planned with CDK infra)');
 }
 
-const { client: cognitoClient, verifier: tokenVerifier } = createDummyCognito(
-  env.AUTH_DEV_TOKEN_SECRET ?? 'letscycle-local-dev-secret',
-);
+// Persist dummy accounts (dev only) so email/password logins survive restarts.
+const dummyAccountsPath =
+  env.NODE_ENV === 'production' ? undefined : '.devstate/cognito-accounts.json';
+const {
+  client: cognitoClient,
+  verifier: tokenVerifier,
+  seedAccounts,
+} = createDummyCognito(env.AUTH_DEV_TOKEN_SECRET ?? 'letscycle-local-dev-secret', {
+  ...(dummyAccountsPath && { persistPath: dummyAccountsPath }),
+});
 
 // "Continue with Google" is enabled once a Google OAuth client ID is set.
 const googleVerifier = env.GOOGLE_CLIENT_ID
@@ -93,8 +100,35 @@ if (hasDb) {
   registerTrustHandlers(bus);
   publisher = new OutboxPublisher({ db: getDb(), bus, log: logger });
   publisher.start();
+  if (dummyAccountsPath) void repairDevLogins();
 } else {
   logger.warn('DATABASE_URL not set — outbox publisher and auth disabled');
+}
+
+// Dev only: give every existing active user an email/password account with a
+// known default password, unless one is already stored. Before accounts were
+// persisted, a restart wiped the dummy-Cognito store and left DB users unable
+// to sign in (and unable to re-register — the email row still exists). This
+// makes them signable-in again with AUTH_DEV_DEFAULT_PASSWORD.
+async function repairDevLogins(): Promise<void> {
+  try {
+    const users = await getDb().user.findMany({
+      where: { accountStatus: 'active' },
+      select: { email: true, cognitoSub: true },
+    });
+    const password = env.AUTH_DEV_DEFAULT_PASSWORD ?? 'letscycle-dev';
+    const added = seedAccounts(
+      users.map((u) => ({ email: u.email, cognitoSub: u.cognitoSub, password })),
+    );
+    if (added > 0) {
+      logger.warn(
+        { added, defaultPassword: password },
+        'dev: seeded email/password logins for existing users (use the default password)',
+      );
+    }
+  } catch (error) {
+    logger.error({ err: error }, 'dev: failed to repair email/password logins');
+  }
 }
 
 function shutdown(signal: string): void {

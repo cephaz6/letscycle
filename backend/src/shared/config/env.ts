@@ -16,6 +16,9 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   // Signs dummy-Cognito dev tokens; forbidden in production (server enforces).
   AUTH_DEV_TOKEN_SECRET: z.string().min(16).optional(),
+  // Dev-only password seeded for pre-existing users at boot so they can sign in
+  // after a restart (their original password was never persisted). Dev only.
+  AUTH_DEV_DEFAULT_PASSWORD: z.string().min(1).optional(),
   S3_BUCKET_UPLOADS: z.string().optional(),
   STRIPE_SECRET_KEY_SECRET_ARN: z.string().optional(),
   STRIPE_WEBHOOK_SECRET_SECRET_ARN: z.string().optional(),
