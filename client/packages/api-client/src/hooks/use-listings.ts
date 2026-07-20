@@ -3,11 +3,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   listingsApi,
+  type ListingDetail,
   type ListingSummary,
   type SearchListingsParams,
   type SearchListingsResult,
 } from '../endpoints/listings';
 import { queryKeys } from '../query/keys';
+
+type UpdateListingInput = Parameters<typeof listingsApi.update>[1];
 
 export function useListings(params: SearchListingsParams = {}) {
   return useQuery({
@@ -30,6 +33,31 @@ export function useFavourites(options?: { enabled?: boolean }) {
     queryFn: () => listingsApi.listFavourites(),
     enabled: options?.enabled ?? true,
     staleTime: 30_000,
+  });
+}
+
+/** Update a listing (price, description, status…). Owner only. */
+export function useUpdateListing() {
+  const qc = useQueryClient();
+  return useMutation<ListingDetail, Error, { id: string; input: UpdateListingInput }>({
+    mutationFn: ({ id, input }) => listingsApi.update(id, input),
+    onSuccess: (listing) => {
+      qc.setQueryData(queryKeys.listings.detail(listing.id), listing);
+      void qc.invalidateQueries({ queryKey: ['listings', 'search'] });
+    },
+  });
+}
+
+/** Soft-remove a listing. Owner only. */
+export function useDeleteListing() {
+  const qc = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: (id) => listingsApi.remove(id),
+    onSuccess: (_v, id) => {
+      void qc.invalidateQueries({ queryKey: queryKeys.listings.detail(id) });
+      void qc.invalidateQueries({ queryKey: ['listings', 'search'] });
+      void qc.invalidateQueries({ queryKey: queryKeys.favourites });
+    },
   });
 }
 

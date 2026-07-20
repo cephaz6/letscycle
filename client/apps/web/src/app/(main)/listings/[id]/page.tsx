@@ -8,12 +8,15 @@ import { Badge, buttonVariants, cn, Heading, Skeleton, Text } from '@letscycle/u
 import { ListingGallery } from '@/features/listings/components/listing-gallery';
 import { RelatedListings } from '@/features/listings/components/related-listings';
 import { ListingActions } from '@/features/listings/components/listing-actions';
+import { OwnerListingControls } from '@/features/listings/components/owner-listing-controls';
 import { SellerCard } from '@/features/listings/components/seller-card';
 import { formatCondition, formatPostedAt, formatPrice } from '@/features/listings/format';
+import { useAuth } from '@/features/auth';
 
 export default function ListingDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
+  const { user } = useAuth();
   const { data: listing, isLoading, isError } = useListing(id);
   const { data: categories } = useCategories();
 
@@ -33,6 +36,7 @@ export default function ListingDetailPage() {
     );
   }
 
+  const isOwner = user?.id === listing.sellerId;
   const isFree = listing.listingType === 'giveaway' || listing.pricePence === null;
   const categoryName = categories?.find((c) => c.id === listing.categoryId)?.name;
   const postedAt = formatPostedAt(listing.publishedAt ?? listing.createdAt);
@@ -76,40 +80,42 @@ export default function ListingDetailPage() {
           </div>
 
           {/* Seller */}
-          <SellerCard sellerId={listing.sellerId} />
+          {!isOwner && <SellerCard sellerId={listing.sellerId} />}
 
-          {/* Purchase / claim */}
-          <ListingActions
-            listingId={listing.id}
-            sellerId={listing.sellerId}
-            listingType={listing.listingType}
-          />
+          {isOwner ? (
+            <OwnerListingControls listing={listing} />
+          ) : (
+            <>
+              {/* Purchase / claim */}
+              <ListingActions listingId={listing.id} listingType={listing.listingType} />
 
-          {/* Buyer protection */}
-          <div className="mt-5 rounded-xl border border-border bg-muted/40 p-4">
-            <p className="flex items-center gap-2 text-sm font-semibold">
-              <ShieldCheck className="size-5 text-primary" /> Buyer protection
-            </p>
-            <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-              {(isFree
-                ? [
-                    'Arrange a safe pickup at a verified meet point.',
-                    'Share arrival & duress signals for peace of mind.',
-                    'Report anything that doesn’t look right.',
-                  ]
-                : [
-                    'Payment is held securely until you confirm pickup.',
-                    'Full refund if the item isn’t as described.',
-                    'Meet safely at verified local points.',
-                  ]
-              ).map((point) => (
-                <li key={point} className="flex gap-2">
-                  <span className="mt-1 size-1.5 shrink-0 rounded-full bg-primary" />
-                  {point}
-                </li>
-              ))}
-            </ul>
-          </div>
+              {/* Buyer protection */}
+              <div className="mt-5 rounded-xl border border-border bg-muted/40 p-4">
+                <p className="flex items-center gap-2 text-sm font-semibold">
+                  <ShieldCheck className="size-5 text-primary" /> Buyer protection
+                </p>
+                <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                  {(isFree
+                    ? [
+                        'Arrange a safe pickup at a verified meet point.',
+                        'Share arrival & duress signals for peace of mind.',
+                        'Report anything that doesn’t look right.',
+                      ]
+                    : [
+                        'Payment is held securely until you confirm pickup.',
+                        'Full refund if the item isn’t as described.',
+                        'Meet safely at verified local points.',
+                      ]
+                  ).map((point) => (
+                    <li key={point} className="flex gap-2">
+                      <span className="mt-1 size-1.5 shrink-0 rounded-full bg-primary" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

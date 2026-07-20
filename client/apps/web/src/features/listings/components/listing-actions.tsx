@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { MessageCircle } from 'lucide-react';
 import {
   ApiError,
@@ -14,17 +13,16 @@ import { Button, Text } from '@letscycle/ui';
 import { useAuth } from '@/features/auth';
 
 /** Primary buy/claim actions on the listing detail. Buy → transaction;
- *  giveaway or "message seller" → conversation. */
+ *  giveaway or "message seller" → conversation. Owners get
+ *  OwnerListingControls instead — the page never renders this for them. */
 export function ListingActions({
   listingId,
-  sellerId,
   listingType,
 }: {
   listingId: string;
-  sellerId: string;
   listingType: ListingType;
 }) {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
   const buy = useCreateTransaction();
   const message = useStartConversation();
@@ -32,18 +30,6 @@ export function ListingActions({
 
   const isGiveaway = listingType === 'giveaway';
   const loginHref = `/login?next=/listings/${listingId}`;
-
-  if (isAuthenticated && user?.id === sellerId) {
-    return (
-      <div className="mt-5 rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-        This is your listing — manage it from{' '}
-        <Link href="/me" className="font-medium text-primary hover:underline">
-          your profile
-        </Link>
-        .
-      </div>
-    );
-  }
 
   async function onBuy() {
     if (!isAuthenticated) return router.push(loginHref);

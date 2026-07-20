@@ -83,6 +83,8 @@ export {
   useListing,
   useFavourites,
   useToggleFavourite,
+  useUpdateListing,
+  useDeleteListing,
 } from './hooks/use-listings';
 export {
   messagesApi,
