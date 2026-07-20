@@ -41,7 +41,7 @@ export function PublicProfileView({ userId }: { userId: string }) {
       <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
         <div className="relative h-24 overflow-hidden sm:h-28">
           <Image
-            src="/illustrations/profile-cover-art.jpg"
+            src="/illustrations/profile-cover-art.svg"
             alt=""
             fill
             priority
