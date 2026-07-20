@@ -6,6 +6,7 @@ export interface CreateUserInput {
   email: string;
   displayName: string;
   cognitoSub: string;
+  avatarUrl?: string;
 }
 
 // Internal account view used by auth (build step 4).

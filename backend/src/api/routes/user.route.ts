@@ -38,7 +38,8 @@ const updateProfileSchema = z
       .string()
       .regex(/^\+?[0-9 ]{6,20}$/, 'Invalid phone number')
       .nullable(),
-    avatarUrl: z.url().max(2048).nullable(),
+    // A media key (uploaded avatar) or a full URL (e.g. Google profile photo).
+    avatarUrl: z.string().min(1).max(2048).nullable(),
     homeLocation: homeLocationSchema.nullable(),
     preferences: preferencesSchema,
   })

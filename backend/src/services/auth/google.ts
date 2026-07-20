@@ -10,6 +10,7 @@ interface GoogleIdTokenClaims {
   email_verified?: boolean | string;
   name?: string;
   given_name?: string;
+  picture?: string;
 }
 
 /**
@@ -39,6 +40,7 @@ export function createGoogleVerifier(clientId: string): GoogleVerifier {
         email: claims.email,
         emailVerified: claims.email_verified === true || claims.email_verified === 'true',
         name: claims.name ?? claims.given_name ?? claims.email.split('@')[0] ?? 'Member',
+        ...(claims.picture ? { pictureUrl: claims.picture } : {}),
       };
     },
   };
