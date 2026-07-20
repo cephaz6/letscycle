@@ -14,7 +14,7 @@ import {
 import { Skeleton, Text, cn } from '@letscycle/ui';
 import { useAuth } from '@/features/auth';
 import { formatPrice } from '@/features/listings/format';
-import { initials } from '../initials';
+import { Avatar } from '@/components/avatar';
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-GB', {
@@ -29,9 +29,8 @@ export function ConversationThread({ conversationId }: { conversationId: string 
   const conversation = conversations?.find((c) => c.id === conversationId);
 
   const otherId =
-    conversation && (conversation.buyerId === user?.id
-      ? conversation.sellerId
-      : conversation.buyerId);
+    conversation &&
+    (conversation.buyerId === user?.id ? conversation.sellerId : conversation.buyerId);
   const { data: other } = usePublicProfile(otherId || undefined);
   const { data: listing } = useListingDetail(conversation?.listingId);
 
@@ -68,9 +67,11 @@ export function ConversationThread({ conversationId }: { conversationId: string 
         >
           <ArrowLeft className="size-5" />
         </Link>
-        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-          {other ? initials(other.displayName) : '·'}
-        </span>
+        <Avatar
+          name={other?.displayName ?? ''}
+          avatarUrl={other?.avatarUrl}
+          className="size-9 shrink-0 text-xs"
+        />
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold leading-tight">
             {other?.displayName ?? 'Conversation'}

@@ -5,16 +5,7 @@ import { useListings, usePublicProfile } from '@letscycle/api-client';
 import { Badge, Skeleton, Text } from '@letscycle/ui';
 import { ListingCard } from '@/features/listings/components/listing-card';
 import { useAuth } from '@/features/auth';
-
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
+import { Avatar } from '@/components/avatar';
 
 export function PublicProfileView({ userId }: { userId: string }) {
   const { user } = useAuth();
@@ -46,9 +37,11 @@ export function PublicProfileView({ userId }: { userId: string }) {
         <div className="px-5 pb-5 sm:px-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">
-              <div className="-mt-12 grid size-24 shrink-0 place-items-center rounded-full bg-linear-to-br from-primary to-emerald-600 text-2xl font-bold text-primary-foreground shadow-lg ring-4 ring-card">
-                {initials(profile.displayName)}
-              </div>
+              <Avatar
+                name={profile.displayName}
+                avatarUrl={profile.avatarUrl}
+                className="-mt-12 size-24 shrink-0 text-2xl shadow-lg ring-4 ring-card"
+              />
               <div className="pb-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl font-bold tracking-tight">

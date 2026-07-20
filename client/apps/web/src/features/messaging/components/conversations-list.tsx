@@ -12,7 +12,7 @@ import {
 import { cn, Skeleton, Text } from '@letscycle/ui';
 import { useAuth } from '@/features/auth';
 import { formatPostedAt } from '@/features/listings/format';
-import { initials } from '../initials';
+import { Avatar } from '@/components/avatar';
 
 export function ConversationsList() {
   const { user } = useAuth();
@@ -73,9 +73,11 @@ function ConversationRow({
         href={`/messages/${conversation.id}`}
         className="flex items-center gap-3 bg-card p-3 transition-colors hover:bg-accent/50"
       >
-        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-          {other ? initials(other.displayName) : '·'}
-        </span>
+        <Avatar
+          name={other?.displayName ?? ''}
+          avatarUrl={other?.avatarUrl}
+          className="size-12 shrink-0 text-sm"
+        />
         <span className="min-w-0 flex-1">
           <span className="flex items-center justify-between gap-2">
             <span className="truncate font-semibold">

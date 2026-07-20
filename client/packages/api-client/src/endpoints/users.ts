@@ -16,6 +16,7 @@ export interface MyProfile {
 export interface UpdateProfileInput {
   displayName?: string;
   phone?: string | null;
+  avatarUrl?: string | null;
 }
 
 /** Public profile (GET /users/:userId). */

@@ -1,18 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { BadgeCheck, UserRound } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 import { usePublicProfile } from '@letscycle/api-client';
-
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
+import { Avatar } from '@/components/avatar';
 
 /** Seller summary row on the listing detail, linking to their public profile. */
 export function SellerCard({ sellerId }: { sellerId: string }) {
@@ -23,9 +14,15 @@ export function SellerCard({ sellerId }: { sellerId: string }) {
       href={`/u/${sellerId}`}
       className="mt-5 flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-accent/50"
     >
-      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-        {seller ? initials(seller.displayName) : <UserRound className="size-5" />}
-      </span>
+      {seller ? (
+        <Avatar
+          name={seller.displayName}
+          avatarUrl={seller.avatarUrl}
+          className="size-10 shrink-0 text-sm"
+        />
+      ) : (
+        <span className="size-10 shrink-0 rounded-full bg-muted" />
+      )}
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className="truncate text-sm font-semibold">
