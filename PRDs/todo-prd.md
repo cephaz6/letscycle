@@ -231,6 +231,29 @@ Requested: when a user deletes a listing, **notify an admin** and keep it
   *block edit/delete once interest or a transaction exists* (see below) — no
   admin needed. Clarify intent before building.
 
+## Price-change trail (price drops / rises)
+
+Show viewers when a listing's price has changed — e.g. "**was £40, now £30
+(−25%)**" — to signal deals and build urgency.
+
+- **Data**: price is currently overwritten in place with no history. Two options:
+  - **Minimal**: add `originalPricePence` (or `previousPricePence`) to the
+    listing, set on the first/each change → the card/detail computes the delta.
+    Cheap; shows "was X, now Y (−Z%)" but not the full journey.
+  - **Full trail**: a `listingPriceHistory` table (`listingId`, `oldPence`,
+    `newPence`, `changedAt`) written whenever `updateListing` changes the price →
+    a sparkline / "price history" list on the detail page.
+- **Backend**: hook into `updateListing` (where price already changes) to record
+  the delta; only for **active** listings so drafts don't accrue noise.
+- **UI**: a small **"↓ 25%"** badge on the card + a struck-through old price on
+  the detail; optionally a mini history list. Only surface **drops** prominently
+  (rises are quieter).
+- **Interplay with edit rules**: price edits are only allowed while no
+  interest/transaction exists (see own-listing edit), so the trail is
+  pre-purchase only — clean.
+- **Feasibility**: easy (minimal) → moderate (full trail + chart). Recommend the
+  **minimal `previousPricePence`** first; add the history table if wanted.
+
 ## User address / home location
 
 Profile "update address": the `User` model has a **`homeLocation` (PostGIS
