@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import type { Tx } from '../../shared/db/transaction.js';
-import type { ConversationView } from './messaging.types.js';
+import type { ConversationListItem, ConversationView } from './messaging.types.js';
 
 type Db = PrismaClient | Tx;
 
@@ -38,12 +38,27 @@ export async function findById(db: Db, id: string): Promise<ConversationView | n
   return db.conversation.findUnique({ where: { id }, select: conversationSelect });
 }
 
-export async function listForUser(db: Db, userId: string): Promise<ConversationView[]> {
-  return db.conversation.findMany({
+export async function listForUser(
+  db: Db,
+  userId: string,
+): Promise<ConversationListItem[]> {
+  const rows = await db.conversation.findMany({
     where: { OR: [{ buyerId: userId }, { sellerId: userId }] },
-    select: conversationSelect,
+    select: {
+      ...conversationSelect,
+      // Unread = messages from the other party the caller hasn't read.
+      _count: {
+        select: {
+          messages: { where: { senderId: { not: userId }, readAt: null } },
+        },
+      },
+    },
     orderBy: [{ lastMessageAt: 'desc' }, { createdAt: 'desc' }],
   });
+  return rows.map(({ _count, ...rest }) => ({
+    ...rest,
+    unreadCount: _count.messages,
+  }));
 }
 
 export async function touchLastMessage(tx: Tx, id: string, at: Date): Promise<void> {

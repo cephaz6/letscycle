@@ -11,6 +11,7 @@ import { getListing } from '../listings/index.js';
 import * as conversationRepo from './conversation.repository.js';
 import * as messageRepo from './message.repository.js';
 import type {
+  ConversationListItem,
   ConversationView,
   MessageView,
   SendMessageInput,
@@ -46,7 +47,7 @@ export async function startConversation(
 export async function listConversations(
   userId: string,
   db: PrismaClient = getDb(),
-): Promise<ConversationView[]> {
+): Promise<ConversationListItem[]> {
   return conversationRepo.listForUser(db, userId);
 }
 
