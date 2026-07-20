@@ -29,8 +29,6 @@ services:
       # any dev origin (localhost / 127.0.0.1 / LAN IP). Pin it in real envs.
       # Set GOOGLE_CLIENT_ID in your shell to enable "Continue with Google".
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      # Dev-only password seeded for existing users on boot (see server.ts).
-      AUTH_DEV_DEFAULT_PASSWORD: ${AUTH_DEV_DEFAULT_PASSWORD:-letscycle-dev}
     volumes:
       # Persist dev-uploaded media across backend rebuilds/restarts.
       - uploaddata:/app/uploads

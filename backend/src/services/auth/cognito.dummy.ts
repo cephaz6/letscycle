@@ -14,16 +14,6 @@ interface StoredAccount {
 export interface DummyCognito {
   client: CognitoClient;
   verifier: TokenVerifier;
-  /**
-   * Dev-only repair: ensure an email/password account exists for an already
-   * registered user, without overwriting one that's already stored. Used at
-   * boot to restore accounts whose in-memory password was lost on restart
-   * (before persistence) so existing DB users can sign in again. Returns the
-   * number of accounts added.
-   */
-  seedAccounts: (
-    entries: { email: string; cognitoSub: string; password: string }[],
-  ) => number;
 }
 
 // In-memory Cognito stand-in for dev and tests: real JWTs (HS256, shared dev
@@ -136,18 +126,5 @@ export function createDummyCognito(
     },
   };
 
-  function seedAccounts(
-    entries: { email: string; cognitoSub: string; password: string }[],
-  ): number {
-    let added = 0;
-    for (const { email, cognitoSub, password } of entries) {
-      if (accounts.has(email)) continue;
-      accounts.set(email, { passwordHash: hashPassword(password), cognitoSub });
-      added += 1;
-    }
-    if (added > 0) save();
-    return added;
-  }
-
-  return { client, verifier, seedAccounts };
+  return { client, verifier };
 }
