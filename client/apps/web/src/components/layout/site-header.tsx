@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { Bell, Heart, MessageCircle, Search } from 'lucide-react';
+import { Bell, Heart, Search } from 'lucide-react';
 import { buttonVariants, cn, Icon, ThemeToggle } from '@letscycle/ui';
 import { MobileMenu } from './mobile-menu';
 import { AccountMenu } from './account-menu';
+import { MessagesNavLink } from '@/features/messaging';
 
 /** Full-width site header: neutral brand bar. The category nav is a separate
  *  strip below (see CategoryNav), so the rule sits under the search, above it. */
@@ -56,13 +57,7 @@ export function SiteHeader() {
         >
           <Heart className="size-5" />
         </Link>
-        <Link
-          href="/messages"
-          aria-label="Messages"
-          className="hidden size-10 place-items-center rounded-full text-foreground transition-colors hover:bg-accent hover:text-accent-foreground sm:grid"
-        >
-          <MessageCircle className="size-5" />
-        </Link>
+        <MessagesNavLink />
 
         <ThemeToggle />
 
