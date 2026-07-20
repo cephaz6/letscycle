@@ -2,9 +2,13 @@ import { Router, type Request } from 'express';
 import { z } from 'zod';
 import { validateBody } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
-import { UnauthorizedError } from '../../shared/errors/httpErrors.js';
+import { BadRequestError, UnauthorizedError } from '../../shared/errors/httpErrors.js';
 import type { TokenVerifier } from '../../services/auth/index.js';
-import { raiseFlag, submitReview } from '../../services/trust/index.js';
+import {
+  listPublicReviews,
+  raiseFlag,
+  submitReview,
+} from '../../services/trust/index.js';
 
 const reviewSchema = z
   .object({
@@ -31,6 +35,15 @@ function requireUserId(req: Request): string {
 export function createTrustRouter(verifier: TokenVerifier): Router {
   const router = Router();
   const auth = requireAuth(verifier);
+
+  // Public — reviews shown on a member's profile.
+  router.get('/users/:userId/reviews', async (req, res) => {
+    const userId = z.uuid().safeParse(req.params.userId);
+    if (!userId.success) {
+      throw new BadRequestError('Invalid user id');
+    }
+    res.status(200).json(await listPublicReviews(userId.data));
+  });
 
   router.post('/reviews', auth, validateBody(reviewSchema), async (req, res) => {
     const body = req.body as z.infer<typeof reviewSchema>;

@@ -19,6 +19,7 @@ export function EditProfileDialog({
   const setUser = useAuthStore((s) => s.setUser);
   const [displayName, setDisplayName] = useState(user.displayName);
   const [phone, setPhone] = useState(user.phone ?? '');
+  const [bio, setBio] = useState(user.bio ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,6 +27,7 @@ export function EditProfileDialog({
     if (!open) return;
     setDisplayName(user.displayName);
     setPhone(user.phone ?? '');
+    setBio(user.bio ?? '');
     setError(null);
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
@@ -46,6 +48,7 @@ export function EditProfileDialog({
       const updated = await usersApi.updateMe({
         displayName: displayName.trim(),
         phone: phone.trim() || null,
+        bio: bio.trim() || null,
       });
       setUser(updated);
       onClose();
@@ -99,6 +102,17 @@ export function EditProfileDialog({
               placeholder="07…"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+            />
+          </Field>
+          <Field label="Bio (optional)" htmlFor="bio">
+            <textarea
+              id="bio"
+              rows={3}
+              maxLength={500}
+              placeholder="A short line about you — what you sell, where you meet…"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </Field>
 

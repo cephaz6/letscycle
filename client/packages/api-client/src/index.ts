@@ -43,8 +43,16 @@ export {
   usersApi,
   type MyProfile,
   type PublicProfile,
+  type PublicProfileStats,
   type UpdateProfileInput,
 } from './endpoints/users';
+export {
+  reviewsApi,
+  type PublicReview,
+  type Review,
+  type SubmitReviewInput,
+} from './endpoints/reviews';
+export { useUserReviews, useSubmitReview } from './hooks/use-reviews';
 export { categoriesApi, type Category } from './endpoints/categories';
 export {
   listingsApi,
@@ -123,3 +131,19 @@ export {
   type NotificationType,
 } from './endpoints/notifications';
 export { useNotifications, useMarkNotificationRead } from './hooks/use-notifications';
+export {
+  wishlistsApi,
+  type WishlistItem,
+  type WishlistItemStatus,
+  type ListingTypePreference,
+  type CreateWishlistItemInput,
+  type UpdateWishlistItemInput,
+} from './endpoints/wishlists';
+export {
+  useWishlist,
+  useCreateWishlistItem,
+  useUpdateWishlistItem,
+  useDeleteWishlistItem,
+} from './hooks/use-wishlists';
+export { matchesApi, type MatchInterestResult } from './endpoints/matches';
+export { useExpressInterest } from './hooks/use-matches';

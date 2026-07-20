@@ -49,6 +49,7 @@ export async function anonymise(tx: Tx, id: string): Promise<void> {
       phone: null,
       displayName: 'Deleted user',
       avatarUrl: null,
+      bio: null,
       homeLocationAccuracyMetres: null,
       emailVerifiedAt: null,
       phoneVerifiedAt: null,
@@ -67,6 +68,7 @@ interface ProfileRow {
   phone: string | null;
   displayName: string;
   avatarUrl: string | null;
+  bio: string | null;
   homeLat: number | null;
   homeLng: number | null;
   homeLocationAccuracyMetres: number | null;
@@ -89,6 +91,7 @@ function toMyProfile(row: ProfileRow): MyProfile {
     phone: row.phone,
     displayName: row.displayName,
     avatarUrl: row.avatarUrl,
+    bio: row.bio,
     homeLocation: hasLocation
       ? {
           lat: row.homeLat as number,
@@ -108,7 +111,7 @@ function toMyProfile(row: ProfileRow): MyProfile {
 export async function getMyProfile(db: Db, id: string): Promise<MyProfile | null> {
   const rows = await db.$queryRaw<ProfileRow[]>`
     SELECT
-      id, email, phone, "displayName", "avatarUrl",
+      id, email, phone, "displayName", "avatarUrl", bio,
       ST_Y("homeLocation"::geometry) AS "homeLat",
       ST_X("homeLocation"::geometry) AS "homeLng",
       "homeLocationAccuracyMetres",
@@ -131,17 +134,36 @@ export async function getPublicProfile(
       id: true,
       displayName: true,
       avatarUrl: true,
+      bio: true,
       emailVerifiedAt: true,
       createdAt: true,
     },
   });
   if (!user) return null;
+
+  // Headline stats. These read other modules' tables directly (listing,
+  // transaction, review) rather than importing each module — the same
+  // extractable-module read pattern used elsewhere for cross-module counts.
+  const [listingsCount, salesCount, reviewsCount, ratingAgg] = await Promise.all([
+    db.listing.count({ where: { sellerId: id, status: 'active' } }),
+    db.transaction.count({ where: { sellerId: id, status: 'completed' } }),
+    db.review.count({ where: { revieweeUserId: id } }),
+    db.review.aggregate({ where: { revieweeUserId: id }, _avg: { rating: true } }),
+  ]);
+
   return {
     id: user.id,
     displayName: user.displayName,
     avatarUrl: user.avatarUrl,
+    bio: user.bio,
     isEmailVerified: user.emailVerifiedAt !== null,
     memberSince: user.createdAt,
+    stats: {
+      listingsCount,
+      salesCount,
+      reviewsCount,
+      averageRating: ratingAgg._avg.rating,
+    },
   };
 }
 
@@ -156,6 +178,7 @@ export async function updateProfile(
   if (input.displayName !== undefined) data.displayName = input.displayName;
   if (input.phone !== undefined) data.phone = input.phone;
   if (input.avatarUrl !== undefined) data.avatarUrl = input.avatarUrl;
+  if (input.bio !== undefined) data.bio = input.bio;
   if (input.preferences !== undefined) {
     data.preferences = input.preferences as Prisma.InputJsonValue;
   }
