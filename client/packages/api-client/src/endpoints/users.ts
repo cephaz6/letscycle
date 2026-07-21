@@ -1,5 +1,11 @@
 import { http } from '../http';
 
+/** User-owned settings. Open-ended: features read the keys they care about. */
+export interface UserPreferences {
+  defaultDistanceKm?: number;
+  notificationDefaults?: Record<string, boolean>;
+}
+
 /** The signed-in user's own profile (GET /users/me). */
 export interface MyProfile {
   id: string;
@@ -10,6 +16,7 @@ export interface MyProfile {
   bio: string | null;
   accountStatus: 'active' | 'suspended' | 'deleted';
   emailVerifiedAt: string | null;
+  preferences: UserPreferences;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,6 +26,7 @@ export interface UpdateProfileInput {
   phone?: string | null;
   avatarUrl?: string | null;
   bio?: string | null;
+  preferences?: UserPreferences;
 }
 
 /** Headline numbers shown on a member's public profile. */

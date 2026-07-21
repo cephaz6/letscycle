@@ -45,6 +45,7 @@ export {
   type PublicProfile,
   type PublicProfileStats,
   type UpdateProfileInput,
+  type UserPreferences,
 } from './endpoints/users';
 export {
   reviewsApi,
@@ -130,8 +131,15 @@ export {
   notificationsApi,
   type AppNotification,
   type NotificationType,
+  type NotificationChannel,
+  type NotificationPreferences,
 } from './endpoints/notifications';
-export { useNotifications, useMarkNotificationRead } from './hooks/use-notifications';
+export {
+  useNotifications,
+  useMarkNotificationRead,
+  useNotificationPreferences,
+  useUpdateNotificationPreferences,
+} from './hooks/use-notifications';
 export {
   wishlistsApi,
   type WishlistItem,

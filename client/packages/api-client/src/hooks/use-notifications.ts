@@ -1,7 +1,11 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { notificationsApi, type NotificationsPage } from '../endpoints/notifications';
+import {
+  notificationsApi,
+  type NotificationPreferences,
+  type NotificationsPage,
+} from '../endpoints/notifications';
 import { queryKeys } from '../query/keys';
 
 export function useNotifications(options?: { enabled?: boolean }) {
@@ -11,6 +15,24 @@ export function useNotifications(options?: { enabled?: boolean }) {
     enabled: options?.enabled ?? true,
     staleTime: 10_000,
     refetchInterval: 30_000, // keep the bell badge fresh
+  });
+}
+
+export function useNotificationPreferences() {
+  return useQuery({
+    queryKey: queryKeys.notificationPreferences,
+    queryFn: () => notificationsApi.getPreferences(),
+    staleTime: 60_000,
+  });
+}
+
+export function useUpdateNotificationPreferences() {
+  const qc = useQueryClient();
+  return useMutation<NotificationPreferences, Error, NotificationPreferences>({
+    mutationFn: (input) => notificationsApi.updatePreferences(input),
+    onSuccess: (prefs) => {
+      qc.setQueryData(queryKeys.notificationPreferences, prefs);
+    },
   });
 }
 
