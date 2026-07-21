@@ -1,5 +1,5 @@
 export { AuthService, revokeAllSessions } from './auth.service.js';
-export { createDummyCognito } from './cognito.dummy.js';
+export { createDummyCognito, hashDevPassword } from './cognito.dummy.js';
 export { createGoogleVerifier } from './google.js';
 export type {
   AuthSession,

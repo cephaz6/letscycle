@@ -16,6 +16,11 @@ export interface DummyCognito {
   verifier: TokenVerifier;
 }
 
+/** Shared with the dev password tool so stored hashes stay compatible. */
+export function hashDevPassword(secret: string, password: string): string {
+  return createHmac('sha256', secret).update(password).digest('hex');
+}
+
 // In-memory Cognito stand-in for dev and tests: real JWTs (HS256, shared dev
 // secret) so the auth middleware exercises genuine verification. The real
 // implementation uses Cognito's hosted pool and RS256 JWKS behind the same
@@ -33,7 +38,7 @@ export function createDummyCognito(
   const persistPath = options.persistPath;
 
   function hashPassword(password: string): string {
-    return createHmac('sha256', secret).update(password).digest('hex');
+    return hashDevPassword(secret, password);
   }
 
   function load(): void {
@@ -53,6 +58,9 @@ export function createDummyCognito(
 
   function save(): void {
     if (!persistPath) return;
+    // Merge over whatever is on disk so entries written since boot (e.g. by the
+    // devPassword tool) aren't clobbered by this process's in-memory view.
+    load();
     mkdirSync(dirname(persistPath), { recursive: true });
     writeFileSync(persistPath, JSON.stringify(Object.fromEntries(accounts), null, 2));
   }
@@ -80,6 +88,8 @@ export function createDummyCognito(
     },
 
     async initiateAuth({ email, password }) {
+      // Re-read on a miss: the store may have gained entries since boot.
+      if (!accounts.has(email)) load();
       const account = accounts.get(email);
       if (!account || account.passwordHash !== hashPassword(password)) {
         throw new Error('NotAuthorizedException');
