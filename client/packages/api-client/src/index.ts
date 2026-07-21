@@ -88,6 +88,7 @@ export {
 export { useCategories } from './hooks/use-categories';
 export {
   useListings,
+  useInfiniteListings,
   useListing,
   useFavourites,
   useToggleFavourite,
