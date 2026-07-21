@@ -46,6 +46,33 @@ export function useConfirmTransaction(id: string) {
   return useTxAction(id, (tid) => transactionsApi.confirm(tid));
 }
 
+export function useCancelTransaction(id: string) {
+  const qc = useQueryClient();
+  return useMutation<Transaction, Error, void>({
+    mutationFn: () => transactionsApi.cancel(id),
+    onSuccess: (tx) => {
+      qc.setQueryData(queryKeys.transactions.detail(id), tx);
+      void qc.invalidateQueries({ queryKey: queryKeys.transactions.mine });
+      // The listing is released back to active.
+      void qc.invalidateQueries({ queryKey: queryKeys.listings.detail(tx.listingId) });
+      void qc.invalidateQueries({ queryKey: ['listings', 'search'] });
+    },
+  });
+}
+
+/** Seller arranges a free handover with a chosen claimant. */
+export function useArrangeGiveaway() {
+  const qc = useQueryClient();
+  return useMutation<Transaction, Error, { listingId: string; buyerId: string }>({
+    mutationFn: (input) => transactionsApi.arrangeGiveaway(input),
+    onSuccess: (tx) => {
+      void qc.invalidateQueries({ queryKey: queryKeys.transactions.mine });
+      void qc.invalidateQueries({ queryKey: queryKeys.listings.detail(tx.listingId) });
+      void qc.invalidateQueries({ queryKey: ['listings', 'search'] });
+    },
+  });
+}
+
 export function useCompleteTransaction(id: string) {
   return useTxAction(id, (tid) => transactionsApi.complete(tid));
 }

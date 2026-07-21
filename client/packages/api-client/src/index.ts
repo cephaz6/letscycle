@@ -122,6 +122,8 @@ export {
   useTransaction,
   useCreateTransaction,
   useConfirmTransaction,
+  useCancelTransaction,
+  useArrangeGiveaway,
   useCompleteTransaction,
   useDisputeTransaction,
   usePayoutStatus,

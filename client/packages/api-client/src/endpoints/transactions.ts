@@ -71,6 +71,19 @@ export const transactionsApi = {
     return http.post<Transaction>(`/transactions/${id}/complete`);
   },
 
+  /**
+   * Free items: the seller picks who gets it. Creates a zero-amount handover
+   * awaiting both pickup confirmations.
+   */
+  arrangeGiveaway(input: { listingId: string; buyerId: string }): Promise<Transaction> {
+    return http.post<Transaction>('/transactions/giveaway', { json: input });
+  },
+
+  /** Either party calls it off before money is captured; releases the listing. */
+  cancel(id: string): Promise<Transaction> {
+    return http.post<Transaction>(`/transactions/${id}/cancel`);
+  },
+
   dispute(id: string, input: { reason: string; description: string }): Promise<Dispute> {
     return http.post<Dispute>(`/transactions/${id}/dispute`, { json: input });
   },
