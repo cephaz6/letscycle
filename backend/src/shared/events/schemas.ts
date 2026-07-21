@@ -56,6 +56,13 @@ export const eventPayloadSchemas = {
   'transaction.initiated': z.object({
     transactionId: z.uuid(),
   }),
+  // A seller arranged a free handover with a chosen claimant.
+  'transaction.handoverArranged': z.object({
+    transactionId: z.uuid(),
+  }),
+  'transaction.cancelled': z.object({
+    transactionId: z.uuid(),
+  }),
   'transaction.paymentCaptured': z.object({
     transactionId: z.uuid(),
   }),

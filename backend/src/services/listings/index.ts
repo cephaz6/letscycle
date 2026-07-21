@@ -11,6 +11,7 @@ export {
   unfavouriteListing,
   listSellerListings,
   removeSellerListings,
+  setListingSaleStatus,
 } from './listing.service.js';
 export {
   seedCategories,

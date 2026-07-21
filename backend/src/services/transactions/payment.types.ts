@@ -22,6 +22,10 @@ export interface PaymentGateway {
 
   capturePayment(paymentIntentId: string): Promise<void>;
 
+  // Release an authorisation that will never be captured (transaction
+  // cancelled), so the buyer's funds stop being held.
+  voidPayment(paymentIntentId: string): Promise<void>;
+
   // Pay the seller their share (amount minus commission).
   transfer(input: {
     transactionId: string;
