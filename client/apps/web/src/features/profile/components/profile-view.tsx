@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -58,7 +59,15 @@ export function ProfileView() {
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       {/* Hero */}
       <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
-        <div className="relative h-32 bg-linear-to-br from-primary via-primary/85 to-emerald-600 sm:h-44">
+        <div className="relative h-32 overflow-hidden sm:h-44">
+          <Image
+            src="/illustrations/profile-cover-art.svg"
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 1152px) 100vw, 1152px"
+            className="object-cover"
+          />
           <div className="absolute -right-10 -top-16 size-56 rounded-full bg-white/10" />
           <div className="absolute right-28 top-8 size-24 rounded-full bg-white/10" />
           <div className="absolute -bottom-10 left-16 size-40 rounded-full bg-black/5" />

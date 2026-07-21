@@ -19,6 +19,14 @@ export interface NotificationsPage {
   offset: number;
 }
 
+/** Delivery channels. Web push becomes usable once the PWA ships. */
+export type NotificationChannel = 'inApp' | 'webPush';
+
+/** Channels per notification type; a missing type falls back to the defaults. */
+export type NotificationPreferences = Partial<
+  Record<NotificationType, NotificationChannel[]>
+>;
+
 export const notificationsApi = {
   /** Latest notifications for the signed-in user (newest first). */
   list(limit = 30, offset = 0): Promise<NotificationsPage> {
@@ -28,5 +36,17 @@ export const notificationsApi = {
   /** Mark a single notification read. */
   markRead(id: string): Promise<void> {
     return http.patch<void>(`/notifications/${id}/read`);
+  },
+
+  /** Per-type delivery channels for the signed-in user. */
+  getPreferences(): Promise<NotificationPreferences> {
+    return http.get<NotificationPreferences>('/notifications/preferences');
+  },
+
+  /** Partial update — only the types supplied are changed. */
+  updatePreferences(input: NotificationPreferences): Promise<NotificationPreferences> {
+    return http.patch<NotificationPreferences>('/notifications/preferences', {
+      json: input,
+    });
   },
 };

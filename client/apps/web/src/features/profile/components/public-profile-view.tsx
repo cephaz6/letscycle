@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { BadgeCheck, CalendarDays, MapPin, Package, Share2, Star } from 'lucide-react';
 import { useListings, useMyTransactions, usePublicProfile } from '@letscycle/api-client';
 import { Badge, Button, Skeleton, Text } from '@letscycle/ui';
@@ -38,7 +39,16 @@ export function PublicProfileView({ userId }: { userId: string }) {
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       {/* Hero */}
       <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
-        <div className="h-24 bg-linear-to-br from-primary via-primary/85 to-emerald-600 sm:h-28" />
+        <div className="relative h-24 overflow-hidden sm:h-28">
+          <Image
+            src="/illustrations/profile-cover-art.svg"
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 1152px) 100vw, 1152px"
+            className="object-cover"
+          />
+        </div>
         <div className="px-5 pb-5 sm:px-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">

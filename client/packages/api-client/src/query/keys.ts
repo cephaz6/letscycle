@@ -10,11 +10,13 @@ export const queryKeys = {
   categories: ['categories'] as const,
   listings: {
     search: (params: SearchListingsParams) => ['listings', 'search', params] as const,
+    infinite: (params: SearchListingsParams) => ['listings', 'infinite', params] as const,
     detail: (id: string) => ['listings', 'detail', id] as const,
   },
   favourites: ['favourites'] as const,
   wishlists: ['wishlists'] as const,
   notifications: ['notifications'] as const,
+  notificationPreferences: ['notifications', 'preferences'] as const,
   user: {
     me: ['user', 'me'] as const,
     public: (id: string) => ['user', 'public', id] as const,

@@ -25,7 +25,7 @@ export function SiteHeader() {
       </Link>
 
       {/* Search hides on mobile — the hero carries a floating search there. */}
-      <form role="search" className="relative hidden flex-1 sm:block" action="/">
+      <form role="search" className="relative hidden flex-1 sm:block" action="/search">
         <input
           type="search"
           name="q"

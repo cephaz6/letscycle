@@ -1,6 +1,11 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   listingsApi,
   type ListingDetail,
@@ -16,6 +21,26 @@ export function useListings(params: SearchListingsParams = {}) {
   return useQuery({
     queryKey: queryKeys.listings.search(params),
     queryFn: () => listingsApi.search(params),
+  });
+}
+
+/**
+ * Paged search for infinite scroll. Pages are offset-based; the next page is
+ * requested only when the caller asks (fetchNextPage), so scrolling costs one
+ * request per page rather than refetching the whole result set.
+ */
+export function useInfiniteListings(params: SearchListingsParams = {}) {
+  const limit = params.limit ?? 24;
+  return useInfiniteQuery({
+    queryKey: queryKeys.listings.infinite({ ...params, limit }),
+    queryFn: ({ pageParam }) =>
+      listingsApi.search({ ...params, limit, offset: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: SearchListingsResult) => {
+      const loaded = lastPage.offset + lastPage.items.length;
+      return loaded < lastPage.total ? loaded : undefined;
+    },
+    staleTime: 30_000,
   });
 }
 

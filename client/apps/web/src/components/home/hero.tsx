@@ -108,7 +108,7 @@ export function Hero() {
       {/* Mobile-only floating search over the hero */}
       <form
         role="search"
-        action="/"
+        action="/search"
         className="absolute inset-x-4 bottom-4 z-20 sm:hidden"
       >
         <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
