@@ -46,6 +46,7 @@ export {
   type PublicProfileStats,
   type UpdateProfileInput,
   type UserPreferences,
+  type HomeLocation,
 } from './endpoints/users';
 export {
   reviewsApi,
@@ -158,4 +159,18 @@ export {
   useDeleteWishlistItem,
 } from './hooks/use-wishlists';
 export { matchesApi, type MatchInterestResult } from './endpoints/matches';
+export {
+  safetyApi,
+  type MeetPoint,
+  type MeetPointCategory,
+  type NearbyMeetPointsParams,
+  type SafeTransitSession,
+  type UpdateSafeTransitInput,
+} from './endpoints/safety';
+export {
+  useMeetPoints,
+  useStartSafeTransit,
+  useUpdateSafeTransit,
+  useSafeTransitSession,
+} from './hooks/use-safety';
 export { useExpressInterest } from './hooks/use-matches';

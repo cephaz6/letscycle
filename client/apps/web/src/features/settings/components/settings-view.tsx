@@ -9,6 +9,7 @@ import {
   Check,
   Download,
   Loader,
+  MapPin,
   SlidersHorizontal,
   Trash2,
 } from 'lucide-react';
@@ -18,11 +19,13 @@ import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
   usersApi,
+  type HomeLocation,
   type NotificationType,
 } from '@letscycle/api-client';
 import { Badge, Button, cn, Input, Text } from '@letscycle/ui';
 import { useAuth, useAuthStore, useSignOut } from '@/features/auth';
 import { Field } from '@/features/auth/form-parts';
+import { LocationPicker } from '@/components/location-picker';
 
 /** In-app defaults when the user has no stored preference for a type. */
 const NOTIFICATION_ROWS: { type: NotificationType; label: string; hint: string }[] = [
@@ -42,6 +45,7 @@ export function SettingsView() {
       </Text>
 
       <div className="space-y-4">
+        <HomeLocationSection />
         <NotificationsSection />
         <SearchDefaultsSection />
         <PayoutsSection />
@@ -167,6 +171,73 @@ function NotificationsSection() {
       <Text muted className="mt-3 text-xs">
         Push notifications arrive when the installable app ships.
       </Text>
+    </Section>
+  );
+}
+
+/**
+ * Matching only considers members with a home location (the candidate query
+ * requires one), so this is what makes wishlist alerts and distance search work.
+ */
+function HomeLocationSection() {
+  const { user } = useAuth();
+  const setUser = useAuthStore((s) => s.setUser);
+  const [draft, setDraft] = useState<HomeLocation | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDraft(user?.homeLocation ?? null);
+  }, [user]);
+
+  const dirty =
+    draft !== null &&
+    (draft.lat !== user?.homeLocation?.lat || draft.lng !== user?.homeLocation?.lng);
+
+  async function save() {
+    if (!draft) return;
+    setError(null);
+    setSaving(true);
+    try {
+      const updated = await usersApi.updateMe({ homeLocation: draft });
+      setUser(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setError('Couldn’t save your location. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Section
+      icon={<MapPin />}
+      title="Home location"
+      subtitle="Roughly where you are, so we can match and sort by distance."
+    >
+      {!user?.homeLocation && (
+        <p className="mb-3 rounded-lg bg-warning/10 px-3 py-2 text-sm text-foreground">
+          Set this to start getting wishlist match alerts — they only go to members with a
+          location.
+        </p>
+      )}
+      <LocationPicker value={draft} onChange={setDraft} />
+      <div className="mt-3 flex items-center gap-3">
+        <Button
+          className="rounded-full"
+          disabled={!dirty || saving}
+          onClick={() => void save()}
+        >
+          {saved ? <Check className="size-4" /> : null}
+          {saving ? 'Saving…' : saved ? 'Saved' : 'Save location'}
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          Only an approximate area is ever shared.
+        </span>
+      </div>
+      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
     </Section>
   );
 }

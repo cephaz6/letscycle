@@ -8,6 +8,7 @@ import {
   LogOut,
   Receipt,
   Settings,
+  ShieldCheck,
   Sparkles,
   UserRound,
 } from 'lucide-react';
@@ -105,6 +106,13 @@ export function AccountMenu() {
               className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-accent"
             >
               <HandCoins className="size-4" /> Selling
+            </Link>
+            <Link
+              href="/safety"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-accent"
+            >
+              <ShieldCheck className="size-4" /> Safe meet points
             </Link>
             <Link
               href="/settings"
