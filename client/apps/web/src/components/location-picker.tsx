@@ -3,9 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import maplibregl, { type Map as MapLibreMap, type Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { LocateFixed } from 'lucide-react';
+import { LocateFixed, Search } from 'lucide-react';
 import type { HomeLocation } from '@letscycle/api-client';
-import { Button, cn } from '@letscycle/ui';
+import { Button, Input, cn } from '@letscycle/ui';
+
+interface GeocodeResult {
+  label: string;
+  lat: number;
+  lng: number;
+}
 
 /** Liverpool city centre — the launch area, used when nothing is set yet. */
 const DEFAULT_CENTRE = { lat: 53.4084, lng: -2.9916 };
@@ -30,9 +36,13 @@ const OSM_STYLE = {
 };
 
 /**
- * Drop-a-pin picker for an approximate home location. Click or drag the marker;
- * "Use my location" asks the browser. The value is deliberately approximate —
- * it drives distance matching and search, and is never shown to other members.
+ * Picker for an approximate home location, with three ways in: aim the pin
+ * (click/drag), type an address or postcode, or paste coordinates. "Use my
+ * location" asks the browser. The value is deliberately approximate — it drives
+ * distance matching and search, and is never shown to other members.
+ *
+ * Geocoding uses Nominatim, whose usage policy caps automated traffic; like the
+ * tiles it wants a proper provider before real load.
  */
 export function LocationPicker({
   value,
@@ -52,6 +62,17 @@ export function LocationPicker({
 
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [results, setResults] = useState<GeocodeResult[]>([]);
+  const [manualLat, setManualLat] = useState('');
+  const [manualLng, setManualLng] = useState('');
+
+  // Keep the coordinate fields showing the current pin.
+  useEffect(() => {
+    setManualLat(value ? String(value.lat) : '');
+    setManualLng(value ? String(value.lng) : '');
+  }, [value]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -133,30 +154,162 @@ export function LocationPicker({
     );
   }
 
+  /** Address/postcode lookup, for people who'd rather type than aim a pin. */
+  async function search(e: React.FormEvent): Promise<void> {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    setError(null);
+    setSearching(true);
+    setResults([]);
+    try {
+      const url =
+        `https://nominatim.openstreetmap.org/search?format=json&limit=5` +
+        `&countrycodes=gb&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error('lookup failed');
+      const rows = (await res.json()) as {
+        display_name: string;
+        lat: string;
+        lon: string;
+      }[];
+      if (rows.length === 0) {
+        setError('No matches — try a postcode, or drop a pin instead.');
+        return;
+      }
+      setResults(
+        rows.map((r) => ({
+          label: r.display_name,
+          lat: Number(r.lat),
+          lng: Number(r.lon),
+        })),
+      );
+    } catch {
+      setError('Address lookup is unavailable — drop a pin instead.');
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function applyManual(e: React.FormEvent): void {
+    e.preventDefault();
+    const lat = Number.parseFloat(manualLat);
+    const lng = Number.parseFloat(manualLng);
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+      return setError('Latitude must be between -90 and 90.');
+    }
+    if (!Number.isFinite(lng) || lng < -180 || lng > 180) {
+      return setError('Longitude must be between -180 and 180.');
+    }
+    setError(null);
+    onChangeRef.current({
+      lat: Number(lat.toFixed(6)),
+      lng: Number(lng.toFixed(6)),
+      accuracyMetres: value?.accuracyMetres ?? DEFAULT_ACCURACY_METRES,
+    });
+  }
+
   return (
-    <div className={cn('space-y-2', className)}>
-      <div
-        ref={containerRef}
-        className="h-64 w-full overflow-hidden rounded-xl border border-border"
-      />
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="rounded-full"
-          disabled={locating}
-          onClick={useMyLocation}
-        >
-          <LocateFixed className="size-4" />
-          {locating ? 'Locating…' : 'Use my location'}
-        </Button>
-        <span className="text-xs text-muted-foreground">
-          {value
-            ? `Pinned at ${value.lat.toFixed(4)}, ${value.lng.toFixed(4)}`
-            : 'Click the map or drag the pin'}
-        </span>
+    <div className={cn('space-y-3', className)}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div
+          ref={containerRef}
+          className="h-64 w-full overflow-hidden rounded-xl border border-border sm:h-72"
+        />
+
+        {/* Type-it-instead alternative to aiming the pin. */}
+        <div className="flex flex-col gap-3">
+          <form onSubmit={(e) => void search(e)} className="space-y-1.5">
+            <label htmlFor="loc-search" className="block text-sm font-medium">
+              Search address or postcode
+            </label>
+            <div className="flex gap-2">
+              <Input
+                id="loc-search"
+                placeholder="e.g. L1 8JQ"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                className="shrink-0 rounded-full"
+                disabled={searching}
+              >
+                <Search className="size-4" />
+                <span className="sr-only">Search</span>
+              </Button>
+            </div>
+          </form>
+
+          {searching && <p className="text-xs text-muted-foreground">Searching…</p>}
+
+          {results.length > 0 && (
+            <ul className="max-h-32 overflow-y-auto rounded-lg border border-border">
+              {results.map((r) => (
+                <li key={`${r.lat},${r.lng}`}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onChangeRef.current({
+                        lat: Number(r.lat.toFixed(6)),
+                        lng: Number(r.lng.toFixed(6)),
+                        accuracyMetres: DEFAULT_ACCURACY_METRES,
+                      });
+                      setResults([]);
+                      setQuery('');
+                    }}
+                    className="block w-full px-3 py-2 text-left text-xs transition-colors hover:bg-accent"
+                  >
+                    {r.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <form onSubmit={applyManual} className="space-y-1.5">
+            <span className="block text-sm font-medium">Or enter coordinates</span>
+            <div className="flex gap-2">
+              <Input
+                aria-label="Latitude"
+                inputMode="decimal"
+                placeholder="Lat"
+                value={manualLat}
+                onChange={(e) => setManualLat(e.target.value)}
+              />
+              <Input
+                aria-label="Longitude"
+                inputMode="decimal"
+                placeholder="Lng"
+                value={manualLng}
+                onChange={(e) => setManualLng(e.target.value)}
+              />
+              <Button type="submit" variant="outline" className="shrink-0 rounded-full">
+                Set
+              </Button>
+            </div>
+          </form>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="self-start rounded-full"
+            disabled={locating}
+            onClick={useMyLocation}
+          >
+            <LocateFixed className="size-4" />
+            {locating ? 'Locating…' : 'Use my location'}
+          </Button>
+        </div>
       </div>
+
+      <p className="text-xs text-muted-foreground">
+        {value
+          ? `Pinned at ${value.lat.toFixed(4)}, ${value.lng.toFixed(4)}`
+          : 'Click the map, drag the pin, or use the form.'}
+      </p>
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
