@@ -97,8 +97,16 @@ describe.skipIf(!hasDb)('transactions service', () => {
     await db.outbox.deleteMany({
       where: { aggregateType: { in: ['transaction', 'listing'] } },
     });
+    // Publishing a listing lets the matching handler write candidates/events
+    // for it, which FK to the listing — clear them or the delete below fails.
+    await db.matchEvent.deleteMany({ where: { listingId: { in: listingIds } } });
+    await db.matchCandidate.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.listing.deleteMany({ where: { id: { in: listingIds } } });
     await db.category.deleteMany({ where: { id: categoryId } });
+    // Completing a transaction feeds the trust module, which scores the parties.
+    await db.trustEvent.deleteMany({ where: { userId: { in: users } } });
+    await db.trustScore.deleteMany({ where: { userId: { in: users } } });
+    await db.notificationPreference.deleteMany({ where: { userId: { in: users } } });
     await db.user.deleteMany({ where: { email: { contains: `txn-${runId}` } } });
     await disconnectDb();
   });

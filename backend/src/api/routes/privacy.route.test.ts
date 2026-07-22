@@ -70,6 +70,10 @@ describe.skipIf(!hasDb)('privacy (erasure, export, security)', () => {
     const listingIds = listings.map((l) => l.id);
     await db.auditLog.deleteMany({ where: { actorUserId: { in: userIds } } });
     await db.wishlistItem.deleteMany({ where: { userId: { in: userIds } } });
+    // Publishing a listing lets the matching handler write candidates/events
+    // for it, which FK to the listing — clear them or the delete below fails.
+    await db.matchEvent.deleteMany({ where: { listingId: { in: listingIds } } });
+    await db.matchCandidate.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.listing.deleteMany({ where: { id: { in: listingIds } } });
     await db.category.deleteMany({ where: { id: categoryId } });
     await db.pushSubscription.deleteMany({ where: { userId: { in: userIds } } });

@@ -21,13 +21,16 @@ describe.skipIf(!databaseUrl)('database schema', () => {
     await prisma.$disconnect();
   });
 
+  // devAuthCredential is excluded alongside the other non-model tables: it backs
+  // the dummy Cognito stand-in in dev and goes away with real Cognito, so it is
+  // not part of the PRD's 35-table data model.
   it('has exactly the 35 application tables', async () => {
     const rows = await prisma.$queryRaw<{ tableName: string }[]>`
       SELECT table_name AS "tableName"
       FROM information_schema.tables
       WHERE table_schema = 'public'
         AND table_type = 'BASE TABLE'
-        AND table_name NOT IN ('spatial_ref_sys', '_prisma_migrations')
+        AND table_name NOT IN ('spatial_ref_sys', '_prisma_migrations', 'devAuthCredential')
       ORDER BY table_name
     `;
     expect(rows).toHaveLength(35);

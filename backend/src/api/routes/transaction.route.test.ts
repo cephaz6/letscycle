@@ -115,6 +115,10 @@ describe.skipIf(!hasDb)('transactions API', () => {
     await db.outbox.deleteMany({
       where: { aggregateType: { in: ['transaction', 'listing'] } },
     });
+    // Publishing a listing lets the matching handler write candidates/events
+    // for it, which FK to the listing — clear them or the delete below fails.
+    await db.matchEvent.deleteMany({ where: { listingId: { in: listingIds } } });
+    await db.matchCandidate.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.listing.deleteMany({ where: { id: { in: listingIds } } });
     await db.category.deleteMany({ where: { id: categoryId } });
     await db.user.deleteMany({ where: { email: { contains: `txn-api-${runId}` } } });

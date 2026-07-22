@@ -251,6 +251,8 @@ describe.skipIf(!hasDb)('notifications service', () => {
     await getDb().notification.deleteMany({ where: { userId: buyer } });
     await getDb().matchCandidate.deleteMany({ where: { listingId } });
     await getDb().wishlistItem.deleteMany({ where: { userId: buyer } });
+    await getDb().matchEvent.deleteMany({ where: { listingId } });
+    await getDb().matchCandidate.deleteMany({ where: { listingId } });
     await getDb().listing.deleteMany({ where: { id: listingId } });
     await getDb().category.deleteMany({ where: { id: category.id } });
     await getDb().outbox.deleteMany({ where: { aggregateId: listingId } });
@@ -355,6 +357,8 @@ describe.skipIf(!hasDb)('notifications service', () => {
 
     await getDb().notification.deleteMany({ where: { userId: { in: [buyer, seller] } } });
     await getDb().transaction.deleteMany({ where: { id: txn.id } });
+    await getDb().matchEvent.deleteMany({ where: { listingId } });
+    await getDb().matchCandidate.deleteMany({ where: { listingId } });
     await getDb().listing.deleteMany({ where: { id: listingId } });
     await getDb().category.deleteMany({ where: { id: category.id } });
     await getDb().outbox.deleteMany({ where: { aggregateType: 'notification' } });
