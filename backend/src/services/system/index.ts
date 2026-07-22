@@ -1,5 +1,6 @@
 export { StorageService } from './storage.service.js';
 export { createDummyStorage } from './storage.dummy.js';
+export { createCloudinaryStorage, type CloudinaryConfig } from './storage.cloudinary.js';
 export {
   seedDefaultSiteSettings,
   getPublicSettings,

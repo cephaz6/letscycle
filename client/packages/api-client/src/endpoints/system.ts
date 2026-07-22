@@ -21,11 +21,7 @@ export interface TermsAcceptance {
 export const UPLOAD_PURPOSES = ['listingPhoto', 'avatar'] as const;
 export type UploadPurpose = (typeof UPLOAD_PURPOSES)[number];
 
-export const UPLOAD_CONTENT_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-] as const;
+export const UPLOAD_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export type UploadContentType = (typeof UPLOAD_CONTENT_TYPES)[number];
 
 export interface CreateUploadInput {
@@ -39,6 +35,9 @@ export interface CreateUploadResult {
   bucket: string;
   key: string;
   uploadUrl: string;
+  /** Form-post providers (Cloudinary) set these; a plain PUT ticket omits them. */
+  method?: 'PUT' | 'POST';
+  fields?: Record<string, string>;
   expiresInSeconds: number;
 }
 

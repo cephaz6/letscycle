@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, MEDIA_BASE_URL } from '../config';
 import { http } from '../http';
 
 export type ListingCondition = 'new' | 'likeNew' | 'good' | 'fair' | 'poor';
@@ -106,6 +106,9 @@ export interface PhotoUploadTicket {
   photoId: string;
   s3ObjectId: string;
   uploadUrl: string;
+  /** Form-post providers (Cloudinary) set these; a plain PUT ticket omits them. */
+  method?: 'PUT' | 'POST';
+  fields?: Record<string, string>;
   expiresInSeconds: number;
 }
 
@@ -172,16 +175,44 @@ export const listingsApi = {
   },
 };
 
-/** Step 2 of the photo flow: PUT the file to the presigned URL. */
-export async function uploadToPresignedUrl(uploadUrl: string, file: Blob): Promise<void> {
-  const res = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': file.type },
-    body: file,
-  });
+/**
+ * Step 2 of the photo flow: send the bytes straight to the storage provider.
+ *
+ * Two shapes, decided by the server: a plain PUT of the raw file (S3 presigned
+ * PUT and the local dev store), or a multipart POST with signed fields
+ * (Cloudinary). Accepts either a ticket or a bare URL so existing PUT callers
+ * keep working unchanged.
+ */
+export async function uploadToPresignedUrl(
+  ticket: string | Pick<PhotoUploadTicket, 'uploadUrl' | 'method' | 'fields'>,
+  file: Blob,
+): Promise<void> {
+  const upload = typeof ticket === 'string' ? { uploadUrl: ticket } : ticket;
+
+  const res =
+    upload.method === 'POST' && upload.fields
+      ? await fetch(upload.uploadUrl, {
+          method: 'POST',
+          // No Content-Type header: the browser must set the multipart boundary.
+          body: toFormData(upload.fields, file),
+        })
+      : await fetch(upload.uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': file.type },
+          body: file,
+        });
+
   if (!res.ok) {
     throw new Error(`Photo upload failed with status ${res.status}`);
   }
+}
+
+function toFormData(fields: Record<string, string>, file: Blob): FormData {
+  const form = new FormData();
+  for (const [name, value] of Object.entries(fields)) form.append(name, value);
+  // Appended last: some providers require the file after its signed fields.
+  form.append('file', file);
+  return form;
 }
 
 /**
@@ -191,6 +222,12 @@ export async function uploadToPresignedUrl(uploadUrl: string, file: Blob): Promi
  */
 export function resolveImageUrl(key: string | null | undefined): string | null {
   if (!key) return null;
+  // Demo/seed rows store whole URLs.
   if (key.startsWith('http')) return key;
+  // A CDN prefix serves the file directly; the stored key doubles as its path,
+  // minus the extension the provider appends itself.
+  if (MEDIA_BASE_URL) {
+    return `${MEDIA_BASE_URL}/${key.replace(/\.[^./]+$/, '')}`;
+  }
   return `${API_BASE_URL}/media?key=${encodeURIComponent(key)}`;
 }

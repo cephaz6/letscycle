@@ -41,6 +41,14 @@ export function createApp(deps: AppDeps = {}): express.Express {
   const app = express();
 
   app.disable('x-powered-by');
+  // Behind a hosting proxy (Render, Fly, a load balancer), req.ip is the proxy
+  // unless we trust the forwarding header. Getting this wrong is not cosmetic:
+  // rate limiting would key every visitor to the same bucket — one shared
+  // 20/min auth allowance for the whole internet — and the audit log would
+  // record the proxy's address for sign-ins, exports and account deletions.
+  // One hop: the platform's proxy. Do not widen without a reason; trusting more
+  // hops than exist lets a client spoof its own IP via X-Forwarded-For.
+  app.set('trust proxy', 1);
   applySecurity(app, { enableRateLimit: deps.enableRateLimit ?? false });
   app.use(express.json());
 
