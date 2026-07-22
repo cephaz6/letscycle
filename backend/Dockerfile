@@ -39,10 +39,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nodejs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 
-# Writable dirs: dev media store (dummy S3) and dev auth state (dummy Cognito
-# accounts, so email/password logins survive restarts).
-RUN mkdir uploads .devstate \
-  && chown nodejs:nodejs uploads .devstate
+# Writable dir for the dev media store (dummy S3 stand-in). Dummy Cognito
+# credentials live in the database, so there is no auth state on disk.
+RUN mkdir uploads && chown nodejs:nodejs uploads
 
 USER nodejs
 EXPOSE 3000

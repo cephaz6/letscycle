@@ -5,6 +5,7 @@ import { disconnectDb, getDb } from './shared/db/client.js';
 import { getEventBus } from './shared/events/bus.js';
 import {
   AuthService,
+  createDevCredentialStore,
   createDummyCognito,
   createGoogleVerifier,
 } from './services/auth/index.js';
@@ -36,13 +37,11 @@ if (env.COGNITO_USER_POOL_ID) {
   throw new Error('Real Cognito client is not implemented yet (planned with CDK infra)');
 }
 
-// Persist dummy accounts (dev only) so email/password logins survive restarts —
-// a registered account can always sign in again with its chosen password.
-const dummyAccountsPath =
-  env.NODE_ENV === 'production' ? undefined : '.devstate/cognito-accounts.json';
+// Dummy credentials live in the database, so a registered account can always
+// sign in again with its chosen password — nothing to lose on restart.
 const { client: cognitoClient, verifier: tokenVerifier } = createDummyCognito(
   env.AUTH_DEV_TOKEN_SECRET ?? 'letscycle-local-dev-secret',
-  { ...(dummyAccountsPath && { persistPath: dummyAccountsPath }) },
+  hasDb ? { store: createDevCredentialStore(getDb()) } : {},
 );
 
 // "Continue with Google" is enabled once a Google OAuth client ID is set.

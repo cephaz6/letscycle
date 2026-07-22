@@ -286,6 +286,20 @@ model BlockedUser {
 // auth module
 // ---------------------------------------------------------------------------
 
+// Dev-only credential store for the dummy Cognito stand-in. Lives in the
+// database (not a side-car file) so a password can never drift away from its
+// user row. Real Cognito owns passwords in production; this table is unused
+// there — server boot forbids the dummy.
+model DevAuthCredential {
+  email        String   @id
+  passwordHash String
+  cognitoSub   String   @unique
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@map("devAuthCredential")
+}
+
 model RefreshToken {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String    @db.Uuid

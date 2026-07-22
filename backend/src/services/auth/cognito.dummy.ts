@@ -1,14 +1,22 @@
 import { createHmac, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
 import { SignJWT, jwtVerify } from 'jose';
 import type { CognitoClient, TokenClaims, TokenVerifier } from './auth.types.js';
 
 const ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 
-interface StoredAccount {
+export interface StoredAccount {
   passwordHash: string;
   cognitoSub: string;
+}
+
+/**
+ * Where dummy credentials live. Backed by the database so a password shares its
+ * user's lifecycle — a side-car file could be cleared or lost independently,
+ * which locked users out of accounts that still existed.
+ */
+export interface DummyAccountStore {
+  findByEmail(email: string): Promise<StoredAccount | null>;
+  upsert(email: string, account: StoredAccount): Promise<void>;
 }
 
 export interface DummyCognito {
@@ -21,51 +29,36 @@ export function hashDevPassword(secret: string, password: string): string {
   return createHmac('sha256', secret).update(password).digest('hex');
 }
 
-// In-memory Cognito stand-in for dev and tests: real JWTs (HS256, shared dev
-// secret) so the auth middleware exercises genuine verification. The real
-// implementation uses Cognito's hosted pool and RS256 JWKS behind the same
-// interfaces. Never used in production — server boot forbids it.
+// Cognito stand-in for dev and tests: real JWTs (HS256, shared dev secret) so
+// the auth middleware exercises genuine verification. The real implementation
+// uses Cognito's hosted pool and RS256 JWKS behind the same interfaces. Never
+// used in production — server boot forbids it.
 //
-// Accounts optionally persist to a JSON file (dev docker volume) so a container
-// restart no longer wipes every email/password login. Passwords are stored as
-// an HMAC, not plaintext.
+// Credentials are read through a store (the database in dev) on every call, so
+// there is no in-process cache to go stale and nothing to lose on restart.
+// Passwords are stored as an HMAC, never plaintext.
 export function createDummyCognito(
   secret: string,
-  options: { persistPath?: string } = {},
+  options: { store?: DummyAccountStore } = {},
 ): DummyCognito {
   const key = new TextEncoder().encode(secret);
-  const accounts = new Map<string, StoredAccount>();
-  const persistPath = options.persistPath;
+  const store = options.store;
+  // Fallback for tests/CI that construct the dummy without a store.
+  const memory = new Map<string, StoredAccount>();
 
   function hashPassword(password: string): string {
     return hashDevPassword(secret, password);
   }
 
-  function load(): void {
-    if (!persistPath || !existsSync(persistPath)) return;
-    try {
-      const raw = JSON.parse(readFileSync(persistPath, 'utf8')) as Record<
-        string,
-        StoredAccount
-      >;
-      for (const [email, account] of Object.entries(raw)) {
-        accounts.set(email, account);
-      }
-    } catch {
-      // Corrupt or empty file — start from an empty store.
-    }
+  async function findAccount(email: string): Promise<StoredAccount | null> {
+    if (store) return store.findByEmail(email);
+    return memory.get(email) ?? null;
   }
 
-  function save(): void {
-    if (!persistPath) return;
-    // Merge over whatever is on disk so entries written since boot (e.g. by the
-    // devPassword tool) aren't clobbered by this process's in-memory view.
-    load();
-    mkdirSync(dirname(persistPath), { recursive: true });
-    writeFileSync(persistPath, JSON.stringify(Object.fromEntries(accounts), null, 2));
+  async function saveAccount(email: string, account: StoredAccount): Promise<void> {
+    if (store) return store.upsert(email, account);
+    memory.set(email, account);
   }
-
-  load();
 
   async function mintAccessToken(cognitoSub: string, email: string): Promise<string> {
     return new SignJWT({ email, 'cognito:groups': ['user'] })
@@ -77,20 +70,17 @@ export function createDummyCognito(
   }
 
   const client: CognitoClient = {
-    signUp({ email, password }) {
-      if (accounts.has(email)) {
-        return Promise.reject(new Error('UsernameExistsException'));
+    async signUp({ email, password }) {
+      if (await findAccount(email)) {
+        throw new Error('UsernameExistsException');
       }
       const cognitoSub = randomUUID();
-      accounts.set(email, { passwordHash: hashPassword(password), cognitoSub });
-      save();
-      return Promise.resolve({ cognitoSub });
+      await saveAccount(email, { passwordHash: hashPassword(password), cognitoSub });
+      return { cognitoSub };
     },
 
     async initiateAuth({ email, password }) {
-      // Re-read on a miss: the store may have gained entries since boot.
-      if (!accounts.has(email)) load();
-      const account = accounts.get(email);
+      const account = await findAccount(email);
       if (!account || account.passwordHash !== hashPassword(password)) {
         throw new Error('NotAuthorizedException');
       }
@@ -102,13 +92,10 @@ export function createDummyCognito(
     },
 
     async refreshSession({ cognitoSub }) {
-      // Federated (e.g. Google) users aren't in the accounts map; still mint a
+      // Federated (e.g. Google) users have no stored credential; still mint a
       // fresh token — the email claim is best-effort.
-      const entry = [...accounts.entries()].find(
-        ([, account]) => account.cognitoSub === cognitoSub,
-      );
       return {
-        accessToken: await mintAccessToken(cognitoSub, entry?.[0] ?? ''),
+        accessToken: await mintAccessToken(cognitoSub, ''),
         expiresInSeconds: ACCESS_TOKEN_TTL_SECONDS,
       };
     },

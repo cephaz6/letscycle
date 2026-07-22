@@ -32,8 +32,6 @@ services:
     volumes:
       # Persist dev-uploaded media across backend rebuilds/restarts.
       - uploaddata:/app/uploads
-      # Persist dummy-Cognito accounts so email/password logins survive restarts.
-      - authdata:/app/.devstate
     depends_on:
       db:
         condition: service_healthy
@@ -42,4 +40,3 @@ services:
 volumes:
   dbdata:
   uploaddata:
-  authdata:
