@@ -16,11 +16,15 @@ export const metadata: Metadata = {
     'Local decluttering marketplace — give away or sell items, matched to nearby people.',
 };
 
-// Mobile-first: correct viewport scaling on phones. themeColor tints the
-// browser/OS chrome, and matches the manifest so an installed app is seamless.
+// Mobile-first: correct viewport scaling on phones. maximumScale/userScalable
+// stop iOS Safari's page-wide zoom-in when a form field is focused. themeColor
+// tints the browser/OS chrome, and matches the manifest so an installed app is
+// seamless.
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
     { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
