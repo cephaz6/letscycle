@@ -75,6 +75,10 @@ export interface SearchListingsParams {
   minPricePence?: number;
   maxPricePence?: number;
   sort?: ListingSort;
+  /** Centre point for distance filtering/sorting. lat and lng go together. */
+  lat?: number;
+  lng?: number;
+  radiusKm?: number;
   limit?: number;
   offset?: number;
 }

@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Search } from 'lucide-react';
-import { Button, cn } from '@letscycle/ui';
+import { buttonVariants, cn } from '@letscycle/ui';
 
 interface HeroSlide {
   type: 'image' | 'video';
@@ -10,6 +11,8 @@ interface HeroSlide {
   title: string;
   subtitle: string;
   cta: string;
+  /** Where the call to action takes you. */
+  href: string;
 }
 
 const wide = (id: string) =>
@@ -24,6 +27,7 @@ const SLIDES: HeroSlide[] = [
     title: 'Give your things a second life',
     subtitle: 'Buy, sell and give away preloved items with people nearby.',
     cta: 'Browse nearby',
+    href: '/search',
   },
   {
     type: 'image',
@@ -31,6 +35,7 @@ const SLIDES: HeroSlide[] = [
     title: 'Sell in minutes, meet locally',
     subtitle: 'List for free and match with buyers just around the corner.',
     cta: 'Start selling',
+    href: '/sell',
   },
   {
     type: 'image',
@@ -38,6 +43,7 @@ const SLIDES: HeroSlide[] = [
     title: 'Free to a good home',
     subtitle: 'Thousands of items given away by neighbours across Liverpool.',
     cta: 'See free stuff',
+    href: '/search?type=giveaway',
   },
 ];
 
@@ -49,10 +55,7 @@ export function Hero() {
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const id = setInterval(
-      () => setActive((i) => (i + 1) % SLIDES.length),
-      INTERVAL_MS,
-    );
+    const id = setInterval(() => setActive((i) => (i + 1) % SLIDES.length), INTERVAL_MS);
     return () => clearInterval(id);
   }, []);
 
@@ -96,9 +99,14 @@ export function Hero() {
                 <p className="mt-2 max-w-md text-sm text-white/90 sm:text-base">
                   {slide.subtitle}
                 </p>
-                <Button size="lg" className="mt-4 rounded-full">
+                <Link
+                  href={slide.href}
+                  // Inactive slides are hidden: keep them out of the tab order.
+                  tabIndex={i === active ? 0 : -1}
+                  className={cn(buttonVariants({ size: 'lg' }), 'mt-4 rounded-full')}
+                >
                   {slide.cta}
-                </Button>
+                </Link>
               </div>
             </div>
           </div>

@@ -2,11 +2,42 @@ import Link from 'next/link';
 import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { Icon } from '@letscycle/ui';
 
-const columns: { heading: string; links: string[] }[] = [
-  { heading: 'Marketplace', links: ['Browse', 'Sell an item', 'Wishlists', 'How it works'] },
-  { heading: 'Company', links: ['About', 'Careers', 'Blog', 'Press'] },
-  { heading: 'Support', links: ['Help centre', 'Safety', 'Contact us', 'Community'] },
-  { heading: 'Legal', links: ['Terms', 'Privacy', 'Cookies', 'Accessibility'] },
+// Every link points at a real page — placeholders (careers, blog, press) are
+// left out until there is something behind them.
+const columns: { heading: string; links: { label: string; href: string }[] }[] = [
+  {
+    heading: 'Marketplace',
+    links: [
+      { label: 'Browse', href: '/search' },
+      { label: 'Sell an item', href: '/sell' },
+      { label: 'Wanted', href: '/wanted' },
+      { label: 'How it works', href: '/how-it-works' },
+    ],
+  },
+  {
+    heading: 'Company',
+    links: [
+      { label: 'About', href: '/about' },
+      { label: 'Contact us', href: '/contact' },
+    ],
+  },
+  {
+    heading: 'Support',
+    links: [
+      { label: 'Help centre', href: '/help' },
+      { label: 'Safety tips', href: '/safety-tips' },
+      { label: 'Safe meet points', href: '/safety' },
+    ],
+  },
+  {
+    heading: 'Legal',
+    links: [
+      { label: 'Terms', href: '/terms' },
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Cookies', href: '/cookies' },
+      { label: 'Accessibility', href: '/accessibility' },
+    ],
+  },
 ];
 
 const socials = [
@@ -29,8 +60,8 @@ export function SiteFooter() {
               <span className="text-xl font-bold tracking-tight">LetsCycle</span>
             </Link>
             <p className="mt-3 text-sm text-muted-foreground">
-              Give your things a second life. A local marketplace for buying, selling
-              and giving away — matched to people near you.
+              Give your things a second life. A local marketplace for buying, selling and
+              giving away — matched to people near you.
             </p>
             <div className="mt-5 flex gap-2">
               {socials.map(({ label, Icon: SocialIcon }) => (
@@ -52,12 +83,12 @@ export function SiteFooter() {
               <h3 className="text-sm font-semibold text-foreground">{col.heading}</h3>
               <ul className="mt-3 space-y-2.5">
                 {col.links.map((link) => (
-                  <li key={link}>
+                  <li key={link.href}>
                     <Link
-                      href="/"
+                      href={link.href}
                       className="text-sm text-muted-foreground transition-colors hover:text-primary"
                     >
-                      {link}
+                      {link.label}
                     </Link>
                   </li>
                 ))}
