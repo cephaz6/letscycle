@@ -6,6 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { LocateFixed, Search } from 'lucide-react';
 import type { HomeLocation } from '@letscycle/api-client';
 import { Button, Input, cn } from '@letscycle/ui';
+import { DEFAULT_CENTRE, OSM_STYLE } from './map-style';
 
 interface GeocodeResult {
   label: string;
@@ -13,27 +14,7 @@ interface GeocodeResult {
   lng: number;
 }
 
-/** Liverpool city centre — the launch area, used when nothing is set yet. */
-const DEFAULT_CENTRE = { lat: 53.4084, lng: -2.9916 };
 const DEFAULT_ACCURACY_METRES = 500;
-
-/**
- * Raster OpenStreetMap tiles. Fine for development and the MVP; a paid tile
- * provider (or self-hosted) is the swap before real traffic, per the PRD — OSM's
- * public tiles are not for production load.
- */
-const OSM_STYLE = {
-  version: 8 as const,
-  sources: {
-    osm: {
-      type: 'raster' as const,
-      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors',
-    },
-  },
-  layers: [{ id: 'osm', type: 'raster' as const, source: 'osm' }],
-};
 
 /**
  * Picker for an approximate home location, with three ways in: aim the pin

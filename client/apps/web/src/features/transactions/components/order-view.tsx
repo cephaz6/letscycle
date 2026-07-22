@@ -26,6 +26,7 @@ import { Badge, Button, Skeleton, Text, cn } from '@letscycle/ui';
 import { useAuth } from '@/features/auth';
 import { formatPrice } from '@/features/listings/format';
 import { LeaveReviewButton } from '@/features/reviews';
+import { SafeTransitPanel } from '@/features/safety';
 import { STATUS_LABEL, STEPS, currentStep, statusVariant } from '../status';
 
 export function OrderView({ id }: { id: string }) {
@@ -243,6 +244,7 @@ function ActionsPanel({
           </Button>
         )}
         {complete.isError && <ActionError />}
+        <SafeTransitPanel transactionId={tx.id} />
         <DisputeSection transactionId={tx.id} />
       </Panel>
     );

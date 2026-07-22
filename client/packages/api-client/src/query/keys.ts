@@ -31,4 +31,7 @@ export const queryKeys = {
     detail: (id: string) => ['transactions', 'detail', id] as const,
   },
   payoutStatus: ['payouts', 'status'] as const,
+  meetPoints: (params: { lat: number; lng: number; radiusKm?: number; limit?: number }) =>
+    ['meetPoints', params] as const,
+  safeTransit: (transactionId: string) => ['safeTransit', transactionId] as const,
 };
