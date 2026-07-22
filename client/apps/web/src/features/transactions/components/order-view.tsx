@@ -27,7 +27,7 @@ import { useAuth } from '@/features/auth';
 import { formatPrice } from '@/features/listings/format';
 import { LeaveReviewButton } from '@/features/reviews';
 import { SafeTransitPanel } from '@/features/safety';
-import { STATUS_LABEL, STEPS, currentStep, statusVariant } from '../status';
+import { STATUS_LABEL, STEPS, currentStep, nextStep, statusVariant } from '../status';
 
 export function OrderView({ id }: { id: string }) {
   const { user } = useAuth();
@@ -86,6 +86,13 @@ export function OrderView({ id }: { id: string }) {
             <span className="block text-sm text-muted-foreground">with {otherName}</span>
           </span>
         </Link>
+      )}
+
+      {/* Whose move it is, in one line — the stepper shows where, not what next. */}
+      {nextStep(tx.status, isSeller) && (
+        <p className="mt-4 rounded-xl bg-primary/10 px-4 py-3 text-sm text-foreground">
+          {nextStep(tx.status, isSeller)}
+        </p>
       )}
 
       {/* Stepper */}
