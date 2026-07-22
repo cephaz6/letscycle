@@ -6,6 +6,7 @@ import { BadRequestError, UnauthorizedError } from '../../shared/errors/httpErro
 import type { TokenVerifier } from '../../services/auth/index.js';
 import {
   listPublicReviews,
+  listUserReviews,
   raiseFlag,
   submitReview,
 } from '../../services/trust/index.js';
@@ -43,6 +44,12 @@ export function createTrustRouter(verifier: TokenVerifier): Router {
       throw new BadRequestError('Invalid user id');
     }
     res.status(200).json(await listPublicReviews(userId.data));
+  });
+
+  // The caller's own reviews — lets the client tell which completed orders it
+  // has already reviewed.
+  router.get('/reviews/me', auth, async (req, res) => {
+    res.status(200).json(await listUserReviews(requireUserId(req)));
   });
 
   router.post('/reviews', auth, validateBody(reviewSchema), async (req, res) => {

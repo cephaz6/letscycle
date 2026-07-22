@@ -10,5 +10,8 @@ export default defineConfig({
     // vs another suite's listings). Slower, but correct for shared-DB tests.
     fileParallelism: false,
     maxWorkers: 1,
+    // Clears test rows left behind by a teardown that failed part-way, so one
+    // bad run can't cascade into unrelated suites on the next one.
+    globalSetup: ['tests/global-setup.ts'],
   },
 });

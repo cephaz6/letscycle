@@ -117,6 +117,14 @@ describe.skipIf(!hasDb)('matching service', () => {
       where: { aggregateId: { in: [...listingIds, ...userIds] } },
     });
     await db.listing.deleteMany({ where: { id: { in: listingIds } } });
+    // Tie the cleanup to the same predicate as the delete below, so a
+    // notification for an untracked user can't block it.
+    await db.notification.deleteMany({
+      where: { user: { email: { contains: `matching-${runId}` } } },
+    });
+    await db.notificationPreference.deleteMany({
+      where: { user: { email: { contains: `matching-${runId}` } } },
+    });
     await db.user.deleteMany({ where: { email: { contains: `matching-${runId}` } } });
     await db.category.deleteMany({
       where: { id: { in: [categoryId, otherCategoryId] } },

@@ -85,6 +85,14 @@ describe.skipIf(!hasDb)('safety API', () => {
     const db = getDb();
     await db.safeTransitSession.deleteMany({ where: { transactionId } });
     await db.transaction.deleteMany({ where: { id: transactionId } });
+    // Publishing a listing lets the matching handler write candidates/events
+    // for it, which FK to the listing — clear them or the delete below fails.
+    await db.matchEvent.deleteMany({
+      where: { listing: { seller: { email: { contains: `safety-api-${runId}` } } } },
+    });
+    await db.matchCandidate.deleteMany({
+      where: { listing: { seller: { email: { contains: `safety-api-${runId}` } } } },
+    });
     await db.listing.deleteMany({
       where: { seller: { email: { contains: `safety-api-${runId}` } } },
     });

@@ -107,8 +107,10 @@ function Toggle({
     >
       <span
         className={cn(
-          'absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform',
-          checked ? 'translate-x-[22px]' : 'translate-x-0.5',
+          // Anchored left, then slid across — without `left` the knob would sit
+          // at its static (centred) position inside the button.
+          'absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition-transform',
+          checked ? 'translate-x-5' : 'translate-x-0',
         )}
       />
     </button>
@@ -156,7 +158,6 @@ function NotificationsSection() {
               <Toggle
                 label={row.label}
                 checked={isOn(row.type)}
-                disabled={update.isPending}
                 onChange={(next) => toggle(row.type, next)}
               />
             </li>

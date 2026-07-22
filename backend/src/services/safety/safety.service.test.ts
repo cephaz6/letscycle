@@ -85,6 +85,10 @@ describe.skipIf(!hasDb)('safety service', () => {
     const ids = [buyerId, sellerId, strangerId];
     await db.safeTransitSession.deleteMany({ where: { userId: { in: ids } } });
     await db.transaction.deleteMany({ where: { id: transactionId } });
+    // Publishing a listing lets the matching handler write candidates/events
+    // for it, which FK to the listing — clear them or the delete below fails.
+    await db.matchEvent.deleteMany({ where: { listing: { sellerId: { in: ids } } } });
+    await db.matchCandidate.deleteMany({ where: { listing: { sellerId: { in: ids } } } });
     await db.listing.deleteMany({ where: { sellerId: { in: ids } } });
     await db.category.deleteMany({ where: { slug: `safety-cat-${runId}` } });
     await db.outbox.deleteMany({ where: { aggregateType: 'listing' } });

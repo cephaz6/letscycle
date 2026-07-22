@@ -337,3 +337,17 @@ export async function unfavouriteListing(
 ): Promise<void> {
   await favouriteRepo.removeFavourite(db, userId, listingId);
 }
+
+/**
+ * Transaction lifecycle hook: reserve a listing while a sale/handover is in
+ * flight, release it if that falls through, or mark it sold on completion.
+ * Deliberately not owner-guarded — the transactions module calls this for a
+ * listing whose participants it has already authorised.
+ */
+export async function setListingSaleStatus(
+  tx: Tx,
+  listingId: string,
+  status: 'active' | 'reserved' | 'completed',
+): Promise<void> {
+  await repo.updateListing(tx, listingId, { status });
+}

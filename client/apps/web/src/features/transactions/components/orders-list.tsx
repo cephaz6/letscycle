@@ -11,12 +11,14 @@ import {
 import { Badge, Skeleton, Text } from '@letscycle/ui';
 import { useAuth } from '@/features/auth';
 import { formatPrice } from '@/features/listings/format';
+import { LeaveReviewButton } from '@/features/reviews';
 import { STATUS_LABEL, statusVariant } from '../status';
 
 export function OrdersList() {
   const { user } = useAuth();
   const { data, isLoading, isError } = useMyTransactions();
-  const orders = data ?? [];
+  // Purchases only — sales are actioned on /selling.
+  const orders = (data ?? []).filter((tx) => tx.buyerId === user?.id);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
@@ -33,7 +35,7 @@ export function OrdersList() {
       ) : orders.length === 0 ? (
         <Empty
           title="No orders yet"
-          subtitle="When you buy something or sell an item, it shows up here."
+          subtitle="Things you buy show up here. Selling something? Check Selling."
         />
       ) : (
         <ul className="space-y-2">
@@ -78,6 +80,11 @@ function OrderRow({ tx, myId }: { tx: Transaction; myId: string | undefined }) {
           {STATUS_LABEL[tx.status]}
         </Badge>
       </Link>
+      {tx.status === 'completed' && (
+        <div className="mt-2 pl-3">
+          <LeaveReviewButton transactionId={tx.id} counterpartyId={tx.sellerId} />
+        </div>
+      )}
     </li>
   );
 }

@@ -23,6 +23,9 @@ export function createDummyPaymentGateway(): PaymentGateway {
     capturePayment() {
       return Promise.resolve();
     },
+    voidPayment() {
+      return Promise.resolve();
+    },
     transfer() {
       return Promise.resolve({ transferId: `tr_dummy_${randomUUID()}` });
     },

@@ -25,6 +25,7 @@ import {
 import { Badge, Button, Skeleton, Text, cn } from '@letscycle/ui';
 import { useAuth } from '@/features/auth';
 import { formatPrice } from '@/features/listings/format';
+import { LeaveReviewButton } from '@/features/reviews';
 import { STATUS_LABEL, STEPS, currentStep, statusVariant } from '../status';
 
 export function OrderView({ id }: { id: string }) {
@@ -116,7 +117,12 @@ export function OrderView({ id }: { id: string }) {
       </div>
 
       {/* Actions */}
-      <ActionsPanel tx={tx} isSeller={isSeller} otherName={otherName} />
+      <ActionsPanel
+        tx={tx}
+        isSeller={isSeller}
+        otherName={otherName}
+        counterpartyId={otherId || undefined}
+      />
 
       {/* Message */}
       {otherId && <MessageLink listingId={tx.listingId} label={`Message ${otherName}`} />}
@@ -179,10 +185,12 @@ function ActionsPanel({
   tx,
   isSeller,
   otherName,
+  counterpartyId,
 }: {
   tx: { id: string; status: string };
   isSeller: boolean;
   otherName: string;
+  counterpartyId?: string;
 }) {
   const confirm = useConfirmTransaction(tx.id);
   const complete = useCompleteTransaction(tx.id);
@@ -259,6 +267,14 @@ function ActionsPanel({
           <Check className="size-5" /> Order complete. Thanks for keeping things in the
           loop!
         </div>
+        {counterpartyId && (
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              How did it go with {otherName}?
+            </p>
+            <LeaveReviewButton transactionId={tx.id} counterpartyId={counterpartyId} />
+          </div>
+        )}
       </Panel>
     );
   }

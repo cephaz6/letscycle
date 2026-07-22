@@ -12,6 +12,7 @@ const HIDE_ON = [
   '/settings',
   '/messages',
   '/transactions',
+  '/selling',
   '/notifications',
   '/u/',
 ];

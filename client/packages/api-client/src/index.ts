@@ -52,8 +52,9 @@ export {
   type PublicReview,
   type Review,
   type SubmitReviewInput,
+  type MyReviews,
 } from './endpoints/reviews';
-export { useUserReviews, useSubmitReview } from './hooks/use-reviews';
+export { useUserReviews, useSubmitReview, useMyReviews } from './hooks/use-reviews';
 export { categoriesApi, type Category } from './endpoints/categories';
 export {
   listingsApi,
@@ -122,6 +123,8 @@ export {
   useTransaction,
   useCreateTransaction,
   useConfirmTransaction,
+  useCancelTransaction,
+  useArrangeGiveaway,
   useCompleteTransaction,
   useDisputeTransaction,
   usePayoutStatus,

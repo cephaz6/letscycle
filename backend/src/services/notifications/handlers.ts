@@ -30,6 +30,13 @@ export function registerNotificationHandlers(
   bus.subscribe('transaction.initiated', async (event) => {
     await service.handleTransactionUpdate(event.payload.transactionId, 'seller');
   });
+  // The seller chose this claimant, so it's the buyer who needs telling.
+  bus.subscribe('transaction.handoverArranged', async (event) => {
+    await service.handleTransactionUpdate(event.payload.transactionId, 'buyer');
+  });
+  bus.subscribe('transaction.cancelled', async (event) => {
+    await service.handleTransactionUpdate(event.payload.transactionId, 'both');
+  });
   bus.subscribe('transaction.paymentCaptured', async (event) => {
     await service.handleTransactionUpdate(event.payload.transactionId, 'both');
   });

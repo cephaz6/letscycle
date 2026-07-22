@@ -22,6 +22,13 @@ const createSchema = z
   })
   .strict();
 
+const giveawaySchema = z
+  .object({
+    listingId: z.uuid(),
+    buyerId: z.uuid(),
+  })
+  .strict();
+
 const disputeSchema = z
   .object({
     reason: z.string().trim().min(1).max(200),
@@ -72,6 +79,23 @@ export function createTransactionRouter(deps: TransactionRouterDeps): Router {
     );
   });
 
+  // Free items: the seller picks who gets it and arranges the handover.
+  router.post(
+    '/transactions/giveaway',
+    auth,
+    validateBody(giveawaySchema),
+    async (req, res) => {
+      const body = req.body as z.infer<typeof giveawaySchema>;
+      res.status(201).json(
+        await transactions.arrangeGiveaway({
+          sellerId: requireUserId(req),
+          listingId: body.listingId,
+          buyerId: body.buyerId,
+        }),
+      );
+    },
+  );
+
   router.get('/transactions/:id', auth, async (req, res) => {
     const id = uuidParam(req, 'id');
     res.status(200).json(await transactions.getTransaction(id, requireUserId(req)));
@@ -80,6 +104,11 @@ export function createTransactionRouter(deps: TransactionRouterDeps): Router {
   router.post('/transactions/:id/confirm', auth, async (req, res) => {
     const id = uuidParam(req, 'id');
     res.status(200).json(await transactions.confirmTransaction(id, requireUserId(req)));
+  });
+
+  router.post('/transactions/:id/cancel', auth, async (req, res) => {
+    const id = uuidParam(req, 'id');
+    res.status(200).json(await transactions.cancelTransaction(id, requireUserId(req)));
   });
 
   router.post('/transactions/:id/complete', auth, async (req, res) => {

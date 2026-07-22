@@ -8,7 +8,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '../../shared/errors/httpErrors.js';
-import { getListing } from '../listings/index.js';
+import { getListing, setListingSaleStatus } from '../listings/index.js';
 import { getSettingValue } from '../system/index.js';
 import * as repo from './transaction.repository.js';
 import * as payoutRepo from './payout.repository.js';
@@ -96,6 +96,7 @@ export class TransactionService {
         eventType: 'initiated',
         actorId: input.buyerId,
       });
+      await setListingSaleStatus(tx, input.listingId, 'reserved');
       await publishEvent(tx, {
         eventType: 'transaction.initiated',
         aggregateType: 'transaction',
@@ -106,6 +107,103 @@ export class TransactionService {
     }, this.db);
 
     return created;
+  }
+
+  /**
+   * Free items: the seller picks one of the people who showed interest and
+   * arranges the handover. There's no payment, so choosing a claimant is the
+   * agreement itself — it starts awaiting both pickup confirmations.
+   */
+  async arrangeGiveaway(input: {
+    listingId: string;
+    sellerId: string;
+    buyerId: string;
+  }): Promise<TransactionView> {
+    const listing = await getListing(input.listingId, this.db);
+    if (listing.listingType !== 'giveaway') {
+      throw new BadRequestError('Only giveaway listings can be handed over this way');
+    }
+    if (listing.sellerId !== input.sellerId) {
+      throw new ForbiddenError('Only the seller can arrange a handover');
+    }
+    if (input.buyerId === input.sellerId) {
+      throw new BadRequestError('You cannot claim your own listing');
+    }
+    if (listing.status !== 'active' && listing.status !== 'reserved') {
+      throw new BadRequestError(`Listing is not available (status: ${listing.status})`);
+    }
+    if (await repo.findActiveForListing(this.db, input.listingId)) {
+      throw new ConflictError('This listing already has an active handover');
+    }
+
+    const created = await withTransaction(async (tx) => {
+      const transaction = await repo.insert(tx, {
+        listingId: input.listingId,
+        buyerId: input.buyerId,
+        sellerId: input.sellerId,
+        amountPence: 0,
+        commissionPence: 0,
+        agreedPickupAt: null,
+      });
+      await repo.insertEvent(tx, {
+        transactionId: transaction.id,
+        eventType: 'initiated',
+        actorId: input.sellerId,
+      });
+      await repo.updateTransaction(tx, transaction.id, { status: 'paymentAuthorised' });
+      await repo.insertEvent(tx, {
+        transactionId: transaction.id,
+        eventType: 'handoverArranged',
+        actorId: input.sellerId,
+      });
+      await setListingSaleStatus(tx, input.listingId, 'reserved');
+      await publishEvent(tx, {
+        eventType: 'transaction.handoverArranged',
+        aggregateType: 'transaction',
+        aggregateId: transaction.id,
+        payload: { transactionId: transaction.id },
+      });
+      return transaction;
+    }, this.db);
+
+    return this.requireTransaction(created.id);
+  }
+
+  /**
+   * Either party calls off a sale or handover before any money is captured.
+   * Releases the listing so it can be claimed again.
+   */
+  async cancelTransaction(id: string, userId: string): Promise<TransactionView> {
+    const transaction = await this.requireParticipant(id, userId);
+    if (
+      transaction.status !== 'initiated' &&
+      transaction.status !== 'paymentAuthorised'
+    ) {
+      throw new BadRequestError(`Cannot cancel a ${transaction.status} transaction`);
+    }
+
+    // Release the authorisation so the buyer's funds stop being held.
+    if (transaction.stripePaymentIntentId) {
+      await this.gateway.voidPayment(transaction.stripePaymentIntentId);
+    }
+
+    await withTransaction(async (tx) => {
+      await repo.updateTransaction(tx, id, { status: 'cancelled' });
+      await repo.insertEvent(tx, {
+        transactionId: id,
+        eventType: 'cancelled',
+        actorId: userId,
+      });
+      await setListingSaleStatus(tx, transaction.listingId, 'active');
+      await publishEvent(tx, {
+        eventType: 'transaction.cancelled',
+        aggregateType: 'transaction',
+        aggregateId: id,
+        payload: { transactionId: id },
+      });
+    }, this.db);
+
+    return this.requireTransaction(id);
   }
 
   // Seller approves the buyer: authorise (not capture) the payment.
@@ -157,7 +255,31 @@ export class TransactionService {
       userId === transaction.buyerId ? transaction.sellerId : transaction.buyerId;
     const completesPair = actors.includes(other);
 
-    if (completesPair) {
+    if (completesPair && transaction.amountPence === 0) {
+      // Free handover: nothing to capture or hold, so the second confirmation
+      // completes it outright and the listing is marked gone.
+      const now = new Date();
+      await withTransaction(async (tx) => {
+        await repo.insertEvent(tx, {
+          transactionId: id,
+          eventType: 'pickupConfirmed',
+          actorId: userId,
+        });
+        await repo.updateTransaction(tx, id, { status: 'completed', completedAt: now });
+        await repo.insertEvent(tx, {
+          transactionId: id,
+          eventType: 'completed',
+          actorId: null,
+        });
+        await setListingSaleStatus(tx, transaction.listingId, 'completed');
+        await publishEvent(tx, {
+          eventType: 'transaction.completed',
+          aggregateType: 'transaction',
+          aggregateId: id,
+          payload: { transactionId: id },
+        });
+      }, this.db);
+    } else if (completesPair) {
       // Second confirmation → capture the authorised payment and move to escrow.
       if (transaction.stripePaymentIntentId) {
         await this.gateway.capturePayment(transaction.stripePaymentIntentId);
@@ -232,6 +354,7 @@ export class TransactionService {
         eventType: 'completed',
         actorId: null,
       });
+      await setListingSaleStatus(tx, transaction.listingId, 'completed');
       await publishEvent(tx, {
         eventType: 'transaction.completed',
         aggregateType: 'transaction',

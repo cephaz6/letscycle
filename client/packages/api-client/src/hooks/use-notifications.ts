@@ -26,10 +26,30 @@ export function useNotificationPreferences() {
   });
 }
 
+/** Optimistic so a switch flips immediately; rolls back if the save fails. */
 export function useUpdateNotificationPreferences() {
   const qc = useQueryClient();
-  return useMutation<NotificationPreferences, Error, NotificationPreferences>({
+  return useMutation<
+    NotificationPreferences,
+    Error,
+    NotificationPreferences,
+    { prev?: NotificationPreferences }
+  >({
     mutationFn: (input) => notificationsApi.updatePreferences(input),
+    onMutate: async (input) => {
+      await qc.cancelQueries({ queryKey: queryKeys.notificationPreferences });
+      const prev = qc.getQueryData<NotificationPreferences>(
+        queryKeys.notificationPreferences,
+      );
+      qc.setQueryData<NotificationPreferences>(
+        queryKeys.notificationPreferences,
+        (old) => ({ ...old, ...input }),
+      );
+      return { prev };
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.prev) qc.setQueryData(queryKeys.notificationPreferences, ctx.prev);
+    },
     onSuccess: (prefs) => {
       qc.setQueryData(queryKeys.notificationPreferences, prefs);
     },

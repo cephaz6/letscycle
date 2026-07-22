@@ -99,8 +99,19 @@ describe.skipIf(!hasDb)('trust service', () => {
     await db.outbox.deleteMany({
       where: { aggregateType: { in: ['review', 'flag', 'listing'] } },
     });
+    // Publishing a listing lets the matching handler write candidates/events
+    // for it, which FK to the listing — clear them or the delete below fails.
+    await db.matchEvent.deleteMany({ where: { listingId: { in: listingIds } } });
+    await db.matchCandidate.deleteMany({ where: { listingId: { in: listingIds } } });
     await db.listing.deleteMany({ where: { id: { in: listingIds } } });
     await db.category.deleteMany({ where: { id: categoryId } });
+    // Scored transactions notify the parties; clear those before the users.
+    await db.notification.deleteMany({
+      where: { user: { email: { contains: `trust-${runId}` } } },
+    });
+    await db.notificationPreference.deleteMany({
+      where: { user: { email: { contains: `trust-${runId}` } } },
+    });
     await db.user.deleteMany({ where: { email: { contains: `trust-${runId}` } } });
     await disconnectDb();
   });
