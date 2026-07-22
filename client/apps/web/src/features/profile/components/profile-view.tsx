@@ -44,7 +44,9 @@ export function ProfileView() {
   const [editing, setEditing] = useState(false);
 
   const listings = useListings(user ? { sellerId: user.id, limit: 40 } : {});
-  const items = listings.data?.items ?? [];
+  // Memoised: `?? []` would hand back a fresh array each render, so the count
+  // below would recompute every time and its dependency would never settle.
+  const items = useMemo(() => listings.data?.items ?? [], [listings.data]);
   const giveaways = useMemo(
     () => items.filter((l) => l.listingType === 'giveaway').length,
     [items],
