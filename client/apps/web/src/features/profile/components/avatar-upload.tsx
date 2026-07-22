@@ -43,7 +43,7 @@ export function AvatarUpload({ className }: { className?: string }) {
         contentType: file.type as UploadContentType,
         sizeBytes: file.size,
       });
-      await uploadToPresignedUrl(upload.uploadUrl, file);
+      await uploadToPresignedUrl(upload, file);
       const updated = await usersApi.updateMe({ avatarUrl: upload.key });
       setUser(updated);
     } catch {

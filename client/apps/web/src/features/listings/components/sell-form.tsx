@@ -125,7 +125,7 @@ export function SellForm() {
           height,
           displayOrder: i,
         });
-        await uploadToPresignedUrl(ticket.uploadUrl, photo.file);
+        await uploadToPresignedUrl(ticket, photo.file);
         await listingsApi.confirmPhoto(listing.id, ticket.photoId);
       }
 
@@ -310,8 +310,8 @@ export function SellForm() {
         )}
 
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <MapPin className="size-3.5" /> Pickup around Liverpool city centre — a
-          precise location picker arrives with the map feature.
+          <MapPin className="size-3.5" /> Pickup around Liverpool city centre — a precise
+          location picker arrives with the map feature.
         </p>
       </section>
 
@@ -362,7 +362,9 @@ function TypeCard({
       <span
         className={cn(
           'grid size-10 shrink-0 place-items-center rounded-full',
-          active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+          active
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-muted text-muted-foreground',
         )}
       >
         {icon}
