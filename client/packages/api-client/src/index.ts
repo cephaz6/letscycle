@@ -46,6 +46,7 @@ export {
   type PublicProfileStats,
   type UpdateProfileInput,
   type UserPreferences,
+  type HomeLocation,
 } from './endpoints/users';
 export {
   reviewsApi,

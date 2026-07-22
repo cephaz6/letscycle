@@ -6,6 +6,16 @@ export interface UserPreferences {
   notificationDefaults?: Record<string, boolean>;
 }
 
+/**
+ * Approximate home location. Accuracy is stored with the point because it is
+ * meaningless without it — the exact position is never shown publicly.
+ */
+export interface HomeLocation {
+  lat: number;
+  lng: number;
+  accuracyMetres: number;
+}
+
 /** The signed-in user's own profile (GET /users/me). */
 export interface MyProfile {
   id: string;
@@ -14,6 +24,7 @@ export interface MyProfile {
   displayName: string;
   avatarUrl: string | null;
   bio: string | null;
+  homeLocation: HomeLocation | null;
   accountStatus: 'active' | 'suspended' | 'deleted';
   emailVerifiedAt: string | null;
   preferences: UserPreferences;
@@ -26,6 +37,7 @@ export interface UpdateProfileInput {
   phone?: string | null;
   avatarUrl?: string | null;
   bio?: string | null;
+  homeLocation?: HomeLocation | null;
   preferences?: UserPreferences;
 }
 
