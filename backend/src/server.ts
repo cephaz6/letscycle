@@ -9,7 +9,11 @@ import {
   createDummyCognito,
   createGoogleVerifier,
 } from './services/auth/index.js';
-import { StorageService, createDummyStorage } from './services/system/index.js';
+import {
+  StorageService,
+  createCloudinaryStorage,
+  createDummyStorage,
+} from './services/system/index.js';
 import { registerMatchingHandlers } from './services/matching/index.js';
 import {
   NotificationService,
@@ -49,12 +53,25 @@ const googleVerifier = env.GOOGLE_CLIENT_ID
   ? createGoogleVerifier(env.GOOGLE_CLIENT_ID)
   : undefined;
 
-// Real S3 arrives with AWS infrastructure; the dummy presigner serves dev and
-// CI, pointing presigned URLs at the local dev media store so uploads work.
+// Uploads: Cloudinary when configured (hosts with no persistent disk would
+// otherwise lose every photo on redeploy), else the dummy presigner pointing at
+// the local dev media store. Real S3 replaces both behind the same seam with
+// the AWS infrastructure.
 const publicApiOrigin = env.PUBLIC_API_ORIGIN ?? `http://localhost:${env.PORT}`;
-const devMediaDir = env.NODE_ENV === 'production' ? undefined : 'uploads';
+const cloudinary =
+  env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET
+    ? {
+        cloudName: env.CLOUDINARY_CLOUD_NAME,
+        apiKey: env.CLOUDINARY_API_KEY,
+        apiSecret: env.CLOUDINARY_API_SECRET,
+      }
+    : undefined;
+// The local media store is only mounted when nothing else stores the bytes.
+const devMediaDir = env.NODE_ENV === 'production' || cloudinary ? undefined : 'uploads';
 const storageService = new StorageService(
-  createDummyStorage(devMediaDir ? publicApiOrigin : undefined),
+  cloudinary
+    ? createCloudinaryStorage(cloudinary)
+    : createDummyStorage(devMediaDir ? publicApiOrigin : undefined),
   env.S3_BUCKET_UPLOADS ?? 'letscycle-uploads-dev',
 );
 

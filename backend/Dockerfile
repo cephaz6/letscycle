@@ -26,6 +26,10 @@ RUN npm run build
 
 # --- runner: run migrations then the compiled server ---
 FROM base AS runner
+# Deliberately not "production": server.ts refuses to boot in production without
+# real Cognito, which is the guard stopping the dummy auth seam reaching a real
+# deployment. Flipping this does not enable production — it stops the app
+# starting. It changes when the real auth/payments integrations land.
 ENV NODE_ENV=development
 ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs \
@@ -49,4 +53,8 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=5 \
   CMD node -e "fetch('http://127.0.0.1:3000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
+# Migrations run against DIRECT_DATABASE_URL when it is set: a transaction-mode
+# connection pooler (Supabase, pgBouncer) cannot run them, while the server
+# itself wants the pooled connection. Falls back to DATABASE_URL when there is
+# no pooler, which is the local and CI case.
+CMD ["sh", "-c", "DATABASE_URL=\"${DIRECT_DATABASE_URL:-$DATABASE_URL}\" npx prisma migrate deploy && node dist/server.js"]

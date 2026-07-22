@@ -14,8 +14,18 @@ export const CONTENT_TYPE_EXTENSION: Record<UploadContentType, string> = {
   'image/webp': 'webp',
 };
 
+/**
+ * A ticket the browser uses to upload bytes directly to the storage provider.
+ *
+ * Defaults to a plain PUT of the raw file (S3 presigned PUT, and the dev media
+ * store). Providers that need a multipart form — Cloudinary today, and S3's
+ * presigned POST when that lands — set `method: 'POST'` and supply the fields to
+ * send alongside the file.
+ */
 export interface PresignedUpload {
   uploadUrl: string;
+  method?: 'PUT' | 'POST';
+  fields?: Record<string, string>;
 }
 
 // Seam for AWS S3 presigning. The dummy serves dev and tests; the real
@@ -44,5 +54,7 @@ export interface CreateUploadResult {
   bucket: string;
   key: string;
   uploadUrl: string;
+  method?: 'PUT' | 'POST';
+  fields?: Record<string, string>;
   expiresInSeconds: number;
 }

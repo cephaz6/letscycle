@@ -17,6 +17,12 @@ const envSchema = z.object({
   // Signs dummy-Cognito dev tokens; forbidden in production (server enforces).
   AUTH_DEV_TOKEN_SECRET: z.string().min(16).optional(),
   S3_BUCKET_UPLOADS: z.string().optional(),
+  // Cloudinary backs uploads wherever there is no persistent disk (the free
+  // demo hosts). All three must be set together; otherwise the dev media store
+  // is used. The secret signs upload tickets and must never reach the browser.
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
   STRIPE_SECRET_KEY_SECRET_ARN: z.string().optional(),
   STRIPE_WEBHOOK_SECRET_SECRET_ARN: z.string().optional(),
   SES_FROM_EMAIL: z.email().optional(),

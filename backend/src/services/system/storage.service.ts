@@ -50,7 +50,7 @@ export class StorageService {
       ownerUserId: input.ownerUserId,
     });
 
-    const { uploadUrl } = await this.client.createPresignedUpload({
+    const { uploadUrl, method, fields } = await this.client.createPresignedUpload({
       bucket: this.bucket,
       key,
       contentType: input.contentType,
@@ -63,6 +63,9 @@ export class StorageService {
       bucket: this.bucket,
       key,
       uploadUrl,
+      // Only present for form-post providers; a plain PUT ticket omits both.
+      ...(method && { method }),
+      ...(fields && { fields }),
       expiresInSeconds: UPLOAD_URL_TTL_SECONDS,
     };
   }
