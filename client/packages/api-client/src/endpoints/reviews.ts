@@ -29,10 +29,20 @@ export interface Review {
   createdAt: string;
 }
 
+export interface MyReviews {
+  given: Review[];
+  received: Review[];
+}
+
 export const reviewsApi = {
   /** Public — reviews a user has received. */
   listForUser(userId: string): Promise<PublicReview[]> {
     return http.get<PublicReview[]>(`/users/${userId}/reviews`, { auth: false });
+  },
+
+  /** The caller's own reviews — used to tell which orders they've reviewed. */
+  listMine(): Promise<MyReviews> {
+    return http.get<MyReviews>('/reviews/me');
   },
 
   /** Leave a review for the other party of a completed transaction. */

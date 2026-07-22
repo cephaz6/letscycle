@@ -21,6 +21,7 @@ import { Badge, Button, Skeleton, Text } from '@letscycle/ui';
 import { useAuth } from '@/features/auth';
 import { Avatar } from '@/components/avatar';
 import { formatPrice } from '@/features/listings/format';
+import { LeaveReviewButton } from '@/features/reviews';
 import { STATUS_LABEL, statusVariant } from '../status';
 
 const LIVE: Transaction['status'][] = [
@@ -196,6 +197,9 @@ function SaleRow({ tx }: { tx: Transaction }) {
               >
                 {cancel.isPending ? 'Cancelling…' : isFree ? 'Call it off' : 'Cancel'}
               </Button>
+            )}
+            {tx.status === 'completed' && (
+              <LeaveReviewButton transactionId={tx.id} counterpartyId={tx.buyerId} />
             )}
             <Link
               href={`/transactions/${tx.id}`}

@@ -11,6 +11,7 @@ import {
 import { Badge, Skeleton, Text } from '@letscycle/ui';
 import { useAuth } from '@/features/auth';
 import { formatPrice } from '@/features/listings/format';
+import { LeaveReviewButton } from '@/features/reviews';
 import { STATUS_LABEL, statusVariant } from '../status';
 
 export function OrdersList() {
@@ -79,6 +80,11 @@ function OrderRow({ tx, myId }: { tx: Transaction; myId: string | undefined }) {
           {STATUS_LABEL[tx.status]}
         </Badge>
       </Link>
+      {tx.status === 'completed' && (
+        <div className="mt-2 pl-3">
+          <LeaveReviewButton transactionId={tx.id} counterpartyId={tx.sellerId} />
+        </div>
+      )}
     </li>
   );
 }
