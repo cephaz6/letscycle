@@ -30,7 +30,13 @@ export function applySecurity(app: Express, options: SecurityOptions): void {
   if (options.enableRateLimit) {
     const common = { windowMs: 60_000, standardHeaders: true, legacyHeaders: false };
     // Stricter limit on auth to blunt credential stuffing / brute force.
-    app.use('/api/v1/auth', rateLimit({ ...common, limit: 20 }));
+    // Configurable so a local/E2E environment — which legitimately creates many
+    // accounts in a short burst — can raise it without weakening the default
+    // that ships to production (untouched unless AUTH_RATE_LIMIT_MAX is set).
+    app.use(
+      '/api/v1/auth',
+      rateLimit({ ...common, limit: env.AUTH_RATE_LIMIT_MAX ?? 20 }),
+    );
     app.use('/api/v1', rateLimit({ ...common, limit: 300 }));
   }
 }

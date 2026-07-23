@@ -29,6 +29,11 @@ services:
       # any dev origin (localhost / 127.0.0.1 / LAN IP). Pin it in real envs.
       # Set GOOGLE_CLIENT_ID in your shell to enable "Continue with Google".
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      # The production auth rate limit (20/min) is realistic for real traffic
+      # but not for the E2E suite, which creates dozens of accounts in a couple
+      # of minutes. Raised only in this local stack — unset (and so at the
+      # strict default) everywhere else, including production.
+      AUTH_RATE_LIMIT_MAX: ${AUTH_RATE_LIMIT_MAX:-1000}
     volumes:
       # Persist dev-uploaded media across backend rebuilds/restarts.
       - uploaddata:/app/uploads

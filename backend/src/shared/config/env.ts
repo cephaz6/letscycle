@@ -31,6 +31,10 @@ const envSchema = z.object({
   FRONTEND_ORIGIN: z.url().optional(),
   // Browser-reachable origin of this API (dev presigned uploads point here).
   PUBLIC_API_ORIGIN: z.url().optional(),
+  // Raises the /auth rate limit above its production default (20/min) — for a
+  // local/E2E environment that legitimately creates many accounts in a burst.
+  // Leave unset in production so the real limit stays in force.
+  AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
