@@ -1,9 +1,11 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Heart, ImageOff, MapPin } from 'lucide-react';
 import {
+  isUnoptimizableImageUrl,
   resolveImageUrl,
   useFavourites,
   useToggleFavourite,
@@ -37,12 +39,13 @@ export function ListingCard({ listing }: { listing: ListingSummary }) {
     <Link href={`/listings/${listing.id}`} className="group block">
       <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
         {image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- remote demo photos
-          <img
+          <Image
             src={image}
             alt={listing.title}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            unoptimized={isUnoptimizableImageUrl(image)}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           <div className="grid h-full w-full place-items-center text-muted-foreground">
