@@ -60,6 +60,7 @@ export { categoriesApi, type Category } from './endpoints/categories';
 export {
   listingsApi,
   resolveImageUrl,
+  isUnoptimizableImageUrl,
   uploadToPresignedUrl,
   type ListingSummary,
   type ListingDetail,

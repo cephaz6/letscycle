@@ -26,6 +26,18 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(dirname, process.env.VERCEL ? '../../../' : '../../'),
   // Workspace packages ship raw TS/TSX; Next transpiles them (no build step).
   transpilePackages: ['@letscycle/ui', '@letscycle/api-client'],
+  // Every host a listing/profile photo can actually be served from, so
+  // next/image can optimise them (resize, modern formats, lazy-load) instead
+  // of the app falling back to plain <img> tags — a real cost measured via
+  // Lighthouse: on the throttled-mobile profile it defaults to, the image-heavy
+  // home/search pages scored far worse on LCP than a text-only page.
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' }, // demo/seed photos
+      { protocol: 'https', hostname: 'res.cloudinary.com' }, // production uploads
+      { protocol: 'http', hostname: 'localhost', port: '3000' }, // local dev media store
+    ],
+  },
 };
 
 export default nextConfig;

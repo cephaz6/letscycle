@@ -23,7 +23,10 @@
   --accent-foreground: oklch(0.32 0.06 155);
 
   /* Brand */
-  --primary: oklch(0.62 0.15 155);
+  /* L=0.62 measured ~3.3:1 against primary-foreground — fails WCAG AA (4.5:1)
+     for normal text, and this pair sits behind most buttons/links in the app.
+     0.50 lands at ~5.3:1 with margin, confirmed via axe (a11y e2e suite). */
+  --primary: oklch(0.5 0.15 155);
   --primary-foreground: oklch(0.99 0.01 155);
 
   /* Lines & focus */
@@ -32,9 +35,14 @@
   --ring: oklch(0.62 0.15 155);
 
   /* Status */
-  --destructive: oklch(0.58 0.22 27);
+  /* Both darkened for WCAG AA: destructive text on a destructive/5 tinted
+     panel measured 4.31:1 (needs 4.5), and the success badge's own bg/fg pair
+     measured 3.6:1. 0.54/0.52 land at ~5.1:1 and ~4.9:1 — confirmed via axe
+     (a11y e2e suite). Darkening the background side only ever helps its
+     existing pairing with the (unchanged, near-white) *-foreground tokens. */
+  --destructive: oklch(0.54 0.22 27);
   --destructive-foreground: oklch(0.99 0.01 27);
-  --success: oklch(0.6 0.16 150);
+  --success: oklch(0.52 0.16 150);
   --success-foreground: oklch(0.99 0.01 150);
   --warning: oklch(0.8 0.16 85);
   --warning-foreground: oklch(0.28 0.05 85);

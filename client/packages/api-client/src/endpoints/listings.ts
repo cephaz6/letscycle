@@ -231,3 +231,20 @@ export function resolveImageUrl(key: string | null | undefined): string | null {
   }
   return `${API_BASE_URL}/media?key=${encodeURIComponent(key)}`;
 }
+
+/**
+ * Pass a `resolveImageUrl` result here before handing it to next/image's
+ * `unoptimized` prop.
+ *
+ * The dev media store is served by the backend container over the browser's
+ * API_BASE_URL (typically localhost:3000 in docker compose). next/image's
+ * server-side optimizer fetches that URL itself, but it runs inside the *web*
+ * container — where "localhost" means itself, not the sibling backend — so
+ * the fetch fails. Real remote hosts (the Unsplash demo photos, Cloudinary in
+ * production) are actual internet hosts reachable identically from both the
+ * browser and the server, so only this one dev-only source needs to skip
+ * optimization; nothing production-facing is affected.
+ */
+export function isUnoptimizableImageUrl(url: string): boolean {
+  return url.includes('/media?key=');
+}
