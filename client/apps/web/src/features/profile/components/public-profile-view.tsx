@@ -55,7 +55,11 @@ export function PublicProfileView({ userId }: { userId: string }) {
               <Avatar
                 name={profile.displayName}
                 avatarUrl={profile.avatarUrl}
-                className="-mt-12 size-24 shrink-0 text-2xl shadow-lg ring-4 ring-card"
+                // z-10: next/image's `fill` renders the cover as
+                // position:absolute, which paints above normal-flow content
+                // regardless of DOM order — without an explicit z-index here
+                // the avatar would render behind it.
+                className="relative z-10 -mt-12 size-24 shrink-0 text-2xl shadow-lg ring-4 ring-card"
               />
               <div className="pb-1">
                 <div className="flex flex-wrap items-center gap-2">
