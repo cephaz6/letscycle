@@ -78,7 +78,10 @@ export function ProfileView() {
         <div className="px-5 pb-6 sm:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">
-              <div className="-mt-14 sm:-mt-16">
+              {/* z-10: next/image's `fill` renders the cover as position:absolute,
+                  which paints above normal-flow content regardless of DOM order —
+                  without an explicit z-index here the avatar would render behind it. */}
+              <div className="relative z-10 -mt-14 sm:-mt-16">
                 <AvatarUpload className="size-28" />
               </div>
               <div className="pb-1">
