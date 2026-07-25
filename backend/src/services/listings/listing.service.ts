@@ -264,6 +264,8 @@ export interface PhotoUploadResult {
   photoId: string;
   s3ObjectId: string;
   uploadUrl: string;
+  method?: 'PUT' | 'POST';
+  fields?: Record<string, string>;
   key: string;
   expiresInSeconds: number;
 }
@@ -295,6 +297,8 @@ export async function createPhotoUpload(
     photoId: photo.id,
     s3ObjectId: upload.s3ObjectId,
     uploadUrl: upload.uploadUrl,
+    ...(upload.method && { method: upload.method }),
+    ...(upload.fields && { fields: upload.fields }),
     key: upload.key,
     expiresInSeconds: upload.expiresInSeconds,
   };
