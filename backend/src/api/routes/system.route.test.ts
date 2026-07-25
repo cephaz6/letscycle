@@ -87,7 +87,7 @@ describe.skipIf(!hasDb)('system API', () => {
     expect(res.status).toBe(201);
     const body = res.body as { uploadUrl: string; s3ObjectId: string; key: string };
     expect(body.uploadUrl).toContain('http');
-    expect(body.key).toContain('avatar/');
+    expect(body.key).toContain('letscycle/profile/');
 
     const row = await getDb().s3Object.findUnique({ where: { id: body.s3ObjectId } });
     expect(row?.lifecycleStatus).toBe('pending');
