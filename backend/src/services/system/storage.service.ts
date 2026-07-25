@@ -16,7 +16,17 @@ import {
   type CreateUploadInput,
   type CreateUploadResult,
   type StorageClient,
+  type UploadPurpose,
 } from './storage.types.js';
+
+// Cloudinary (and any future provider) organises assets by folder-ish path
+// segments in the key/public_id, so this is where LetsCycle's on-disk layout
+// lives — letscycle/listing/... and letscycle/profile/... — independent of
+// the wire-level `purpose` vocabulary used everywhere else in the app.
+const FOLDER_BY_PURPOSE: Record<UploadPurpose, string> = {
+  listingPhoto: 'listing',
+  avatar: 'profile',
+};
 
 export class StorageService {
   constructor(
@@ -40,7 +50,8 @@ export class StorageService {
     }
 
     const extension = CONTENT_TYPE_EXTENSION[input.contentType];
-    const key = `${input.purpose}/${input.ownerUserId}/${randomUUID()}.${extension}`;
+    const folder = FOLDER_BY_PURPOSE[input.purpose];
+    const key = `letscycle/${folder}/${input.ownerUserId}/${randomUUID()}.${extension}`;
 
     const object = await repo.insertPending(this.db, {
       bucket: this.bucket,

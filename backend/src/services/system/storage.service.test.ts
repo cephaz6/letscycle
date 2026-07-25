@@ -57,7 +57,7 @@ describe.skipIf(!hasDb)('StorageService', () => {
     });
 
     expect(result.bucket).toBe(bucket);
-    expect(result.key).toMatch(new RegExp(`^avatar/${ownerId}/.+\\.png$`));
+    expect(result.key).toMatch(new RegExp(`^letscycle/profile/${ownerId}/.+\\.png$`));
     expect(result.uploadUrl).toContain(result.key);
     expect(result.expiresInSeconds).toBe(15 * 60);
 
