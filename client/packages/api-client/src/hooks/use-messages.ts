@@ -11,8 +11,8 @@ export function useConversations(options?: { enabled?: boolean }) {
     queryKey: queryKeys.conversations,
     queryFn: () => messagesApi.listConversations(),
     enabled: options?.enabled ?? true,
-    staleTime: 10_000,
-    refetchInterval: 20_000, // keep the unread badge fresh
+    staleTime: 20_000,
+    refetchInterval: 45_000, // keep the unread badge fresh
   });
 }
 

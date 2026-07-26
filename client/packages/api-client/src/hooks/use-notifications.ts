@@ -13,8 +13,8 @@ export function useNotifications(options?: { enabled?: boolean }) {
     queryKey: queryKeys.notifications,
     queryFn: () => notificationsApi.list(30),
     enabled: options?.enabled ?? true,
-    staleTime: 10_000,
-    refetchInterval: 30_000, // keep the bell badge fresh
+    staleTime: 30_000,
+    refetchInterval: 60_000, // keep the bell badge fresh
   });
 }
 
