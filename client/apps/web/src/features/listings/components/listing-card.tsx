@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,9 +21,11 @@ export function ListingCard({ listing }: { listing: ListingSummary }) {
   const router = useRouter();
   const { data: favourites } = useFavourites({ enabled: isAuthenticated });
   const toggle = useToggleFavourite();
+  const [imageFailed, setImageFailed] = useState(false);
 
   const isFree = listing.listingType === 'giveaway' || listing.pricePence === null;
   const image = resolveImageUrl(listing.coverPhotoKey);
+  const showImage = Boolean(image) && !imageFailed;
   const distance = formatDistance(listing.distanceMetres);
   const saved = Boolean(favourites?.items.some((l) => l.id === listing.id));
 
@@ -38,14 +41,18 @@ export function ListingCard({ listing }: { listing: ListingSummary }) {
   return (
     <Link href={`/listings/${listing.id}`} className="group block">
       <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
-        {image ? (
+        {showImage ? (
           <Image
-            src={image}
+            src={image as string}
             alt={listing.title}
             fill
-            unoptimized={isUnoptimizableImageUrl(image)}
+            unoptimized={isUnoptimizableImageUrl(image as string)}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
+            // A dead/unreachable URL (e.g. demo data seeded against a source
+            // that no longer resolves) falls back to the same placeholder as
+            // a missing key, instead of the browser's broken-image glyph.
+            onError={() => setImageFailed(true)}
           />
         ) : (
           <div className="grid h-full w-full place-items-center text-muted-foreground">

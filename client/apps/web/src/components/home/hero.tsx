@@ -63,7 +63,7 @@ export function Hero() {
   return (
     <section
       aria-label="Featured"
-      className="relative h-64 w-full overflow-hidden border-b border-border lg:h-80"
+      className="relative h-80 w-full overflow-hidden border-b border-border sm:h-96 lg:h-112"
     >
       {SLIDES.map((slide, i) => (
         <div
@@ -74,53 +74,88 @@ export function Hero() {
             i === active ? 'opacity-100' : 'pointer-events-none opacity-0',
           )}
         >
-          {slide.type === 'video' ? (
-            <video
-              className="h-full w-full object-cover"
-              src={slide.src}
-              autoPlay
-              muted
-              loop
-              playsInline
-            />
-          ) : (
-            <Image
-              src={slide.src}
-              alt=""
-              fill
-              // Only the first slide paints before any interval fires, so it's
-              // the one actually competing for LCP — the rest can lazy-load.
-              priority={i === 0}
-              sizes="100vw"
-              className="object-cover"
-            />
-          )}
+          <div className="hero-kenburns relative h-full w-full">
+            {slide.type === 'video' ? (
+              <video
+                className="h-full w-full object-cover"
+                src={slide.src}
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+            ) : (
+              <Image
+                src={slide.src}
+                alt=""
+                fill
+                // Only the first slide paints before any interval fires, so it's
+                // the one actually competing for LCP — the rest can lazy-load.
+                priority={i === 0}
+                sizes="100vw"
+                className="object-cover"
+              />
+            )}
+          </div>
 
-          {/* Legibility scrim */}
-          <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-transparent" />
+          {/* Legibility scrim: dark from the left for the text, and a soft
+              footer band so the mobile search pill and the dots stay readable
+              over any photo. */}
+          <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/35 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/50 to-transparent" />
 
           <div className="absolute inset-0">
             <div className="mx-auto flex h-full max-w-7xl items-center px-4 pb-16 sm:px-6 sm:pb-0 lg:px-8">
               <div className="max-w-lg text-white">
-                <h2 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
+                <h2 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
                   {slide.title}
                 </h2>
-                <p className="mt-2 max-w-md text-sm text-white/90 sm:text-base">
+                <p className="mt-3 max-w-md text-base text-white/90 sm:text-lg">
                   {slide.subtitle}
                 </p>
-                <Link
-                  href={slide.href}
-                  // Inactive slides are hidden: keep them out of the tab order.
-                  tabIndex={i === active ? 0 : -1}
-                  className={cn(buttonVariants({ size: 'lg' }), 'mt-4 rounded-full')}
-                >
-                  {slide.cta}
-                </Link>
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <Link
+                    href={slide.href}
+                    // Inactive slides are hidden: keep them out of the tab order.
+                    tabIndex={i === active ? 0 : -1}
+                    className={cn(buttonVariants({ size: 'lg' }), 'rounded-full shadow-lg')}
+                  >
+                    {slide.cta}
+                  </Link>
+                  <Link
+                    href="/how-it-works"
+                    tabIndex={i === active ? 0 : -1}
+                    className={cn(
+                      buttonVariants({ variant: 'outline', size: 'lg' }),
+                      'hidden rounded-full border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white sm:inline-flex',
+                    )}
+                  >
+                    How it works
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
       ))}
+
+      {/* Slide indicators: desktop only — mobile's bottom strip is already
+          taken by the floating search below. */}
+      <div className="absolute inset-x-0 bottom-5 z-20 hidden justify-center gap-2 sm:flex">
+        {SLIDES.map((slide, i) => (
+          <button
+            key={slide.title}
+            type="button"
+            aria-label={`Show slide ${i + 1}: ${slide.title}`}
+            aria-current={i === active}
+            onClick={() => setActive(i)}
+            className={cn(
+              'h-1.5 rounded-full transition-all',
+              i === active ? 'w-6 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/70',
+            )}
+          />
+        ))}
+      </div>
 
       {/* Mobile-only floating search over the hero */}
       <form
