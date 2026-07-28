@@ -17,3 +17,21 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Subtle, one-time zoom on the hero's slide images. Skipped entirely under
+   reduced motion, matching the autoplay interval, which is already disabled
+   in JS for the same preference. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-kenburns {
+    animation: hero-kenburns 6s ease-out forwards;
+  }
+}
+
+@keyframes hero-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
