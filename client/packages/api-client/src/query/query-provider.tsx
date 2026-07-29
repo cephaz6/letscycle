@@ -31,7 +31,21 @@ export function createQueryClient(): QueryClient {
 // Bump this if a cached query's shape changes incompatibly — stops an old
 // sessionStorage entry from a previous build being rehydrated into a client
 // that no longer expects it.
-const PERSIST_BUSTER = 'v1';
+const PERSIST_BUSTER = 'v2';
+
+/**
+ * Infinite queries (paginated lists like the browse grid or the
+ * notifications page) key their second segment 'infinite' by convention —
+ * see queryKeys.listings.infinite / queryKeys.notificationsInfinite.
+ * Persisting one would restore every page a user had ever scrolled through
+ * (e.g. 16 items after one "See more" click) instead of the first page,
+ * defeating the "start small, load more on demand" design those lists are
+ * built around. Everything else — categories, listing details, favourites —
+ * is a plain single-page query and benefits from persistence normally.
+ */
+function shouldPersist(query: { queryKey: readonly unknown[] }): boolean {
+  return query.queryKey[1] !== 'infinite';
+}
 
 /**
  * Wraps the app in a per-client QueryClient (one instance per browser tab),
@@ -57,6 +71,10 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         persister: createSyncStoragePersister({ storage: window.sessionStorage }),
         buster: PERSIST_BUSTER,
         maxAge: 24 * 60 * 60 * 1000,
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) =>
+            query.state.status === 'success' && shouldPersist(query),
+        },
       }}
     >
       {children}
