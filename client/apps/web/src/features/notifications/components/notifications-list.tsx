@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { BellOff, Check, CheckCheck, Sparkles } from 'lucide-react';
+import { BellOff, Check, CheckCheck, Loader2, Sparkles } from 'lucide-react';
 import {
   useExpressInterest,
+  useInfiniteNotifications,
   useMarkNotificationRead,
-  useNotifications,
   type AppNotification,
 } from '@letscycle/api-client';
 import { Button, cn, Skeleton, Text } from '@letscycle/ui';
@@ -13,9 +13,17 @@ import { formatPostedAt } from '@/features/listings/format';
 import { notificationMeta } from '../notification-meta';
 
 export function NotificationsList() {
-  const { data, isLoading, isError } = useNotifications();
+  const {
+    data,
+    isLoading,
+    isError,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteNotifications();
   const markRead = useMarkNotificationRead();
-  const items = data?.items ?? [];
+  const items = data?.pages.flatMap((page) => page.items) ?? [];
+  const total = data?.pages[0]?.total ?? 0;
   const unread = items.filter((n) => !n.readAt);
 
   return (
@@ -47,15 +55,42 @@ export function NotificationsList() {
           subtitle="Matches, messages and order updates will show up here."
         />
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
-          {items.map((n) => (
-            <NotificationRow
-              key={n.id}
-              notification={n}
-              onOpen={() => !n.readAt && markRead.mutate(n.id)}
-            />
-          ))}
-        </ul>
+        // Fixed-height + internal scroll: loading more in bits (10 at a
+        // time) grows this box's content, not the page itself.
+        <div className="max-h-128 overflow-y-auto rounded-2xl border border-border">
+          <ul className="divide-y divide-border">
+            {items.map((n) => (
+              <NotificationRow
+                key={n.id}
+                notification={n}
+                onOpen={() => !n.readAt && markRead.mutate(n.id)}
+              />
+            ))}
+          </ul>
+
+          <div className="flex items-center justify-center border-t border-border bg-card p-3">
+            {hasNextPage ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isFetchingNextPage}
+                onClick={() => void fetchNextPage()}
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" /> Loading…
+                  </>
+                ) : (
+                  'See more'
+                )}
+              </Button>
+            ) : (
+              <Text muted className="text-xs">
+                You’ve seen all {total}.
+              </Text>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

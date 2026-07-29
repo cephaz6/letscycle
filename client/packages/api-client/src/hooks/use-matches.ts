@@ -11,6 +11,7 @@ export function useExpressInterest() {
     mutationFn: (candidateId) => matchesApi.expressInterest(candidateId),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.notifications });
+      void qc.invalidateQueries({ queryKey: queryKeys.notificationsInfinite });
     },
   });
 }
