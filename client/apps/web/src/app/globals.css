@@ -9,7 +9,37 @@ body {
   @apply bg-background text-foreground antialiased;
 }
 
-/* Hide scrollbars on horizontally-scrolling strips (category pills, carousels). */
+/* Themed scrollbar everywhere, replacing the OS/browser default: a thin,
+   rounded, semi-transparent thumb on a transparent track, using the same
+   border/muted tokens as the rest of the design system so it follows light
+   and dark mode automatically. `scrollbar-width`/`scrollbar-color` are
+   inherited (Firefox, and Chromium 121+), so setting them once on `html`
+   covers every scrollable descendant; `::-webkit-scrollbar` pseudo-elements
+   are not inherited (Safari), so those are declared universally instead. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
+}
+
+/* Hide scrollbars entirely on horizontally-scrolling strips (category pills,
+   gallery thumbnails) — more specific than the rules above, so it wins. */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
