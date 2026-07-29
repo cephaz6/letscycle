@@ -50,13 +50,14 @@ export function ListingGallery({
         </div>
       )}
 
-      <div className="flex-1 overflow-hidden rounded-xl bg-muted">
+      {/* Aspect ratio lives on the wrapper, not the image: a grid/flex
+          ancestor stretching this column taller (e.g. to match a taller info
+          panel next to it) would otherwise desync the two and leave a bare
+          strip of the wrapper's background below a shorter, un-stretched
+          image. */}
+      <div className="aspect-square flex-1 overflow-hidden rounded-xl bg-muted sm:aspect-4/3">
         {/* eslint-disable-next-line @next/next/no-img-element -- remote demo photos */}
-        <img
-          src={main}
-          alt={title}
-          className="aspect-square w-full object-cover sm:aspect-4/3"
-        />
+        <img src={main} alt={title} className="h-full w-full object-cover" />
       </div>
     </div>
   );
