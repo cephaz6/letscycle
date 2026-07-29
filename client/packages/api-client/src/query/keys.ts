@@ -16,6 +16,7 @@ export const queryKeys = {
   favourites: ['favourites'] as const,
   wishlists: ['wishlists'] as const,
   notifications: ['notifications'] as const,
+  notificationsInfinite: ['notifications', 'infinite'] as const,
   notificationPreferences: ['notifications', 'preferences'] as const,
   user: {
     me: ['user', 'me'] as const,

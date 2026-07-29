@@ -141,6 +141,7 @@ export {
 } from './endpoints/notifications';
 export {
   useNotifications,
+  useInfiniteNotifications,
   useMarkNotificationRead,
   useNotificationPreferences,
   useUpdateNotificationPreferences,
