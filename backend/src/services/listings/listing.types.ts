@@ -69,6 +69,8 @@ export interface ListingDetail {
   createdAt: Date;
   updatedAt: Date;
   photos: ListingPhotoDetail[];
+  viewCount: number;
+  favouriteCount: number;
 }
 
 export type ListingSort = 'recent' | 'distance' | 'priceAsc' | 'priceDesc' | 'relevance';
