@@ -95,6 +95,7 @@ export {
   useInfiniteListings,
   useListing,
   useFavourites,
+  useRecentlyViewed,
   useToggleFavourite,
   useUpdateListing,
   useDeleteListing,

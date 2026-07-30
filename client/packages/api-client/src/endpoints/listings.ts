@@ -123,14 +123,24 @@ export const listingsApi = {
     });
   },
 
-  /** Public listing detail. */
+  /** Listing detail — works signed out (optionalAuth on the backend accepts
+   *  a missing or invalid token as anonymous), but must send the Bearer token
+   *  when one exists so the view is attributed to the right viewer, which is
+   *  what recently-viewed reads back. Auth defaults to true/"attach if
+   *  present", so this needs no explicit option. */
   getById(id: string): Promise<ListingDetail> {
-    return http.get<ListingDetail>(`/listings/${id}`, { auth: false });
+    return http.get<ListingDetail>(`/listings/${id}`);
   },
 
   /** The signed-in user's saved (favourited) listings. */
   listFavourites(): Promise<SearchListingsResult> {
     return http.get<SearchListingsResult>('/favourites');
+  },
+
+  /** The signed-in user's recent browsing history — own listings and
+   *  anything no longer active are excluded server-side. */
+  listRecentlyViewed(): Promise<ListingSummary[]> {
+    return http.get<ListingSummary[]>('/recently-viewed');
   },
 
   /** Save a listing to favourites. */

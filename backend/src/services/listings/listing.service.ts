@@ -19,6 +19,7 @@ import type {
   CreateListingInput,
   CreatePhotoUploadInput,
   ListingDetail,
+  ListingSummary,
   ListingType,
   SearchListingsFilters,
   SearchListingsResult,
@@ -130,6 +131,14 @@ export async function getListing(
   db: PrismaClient = getDb(),
 ): Promise<ListingDetail> {
   return loadDetail(db, id);
+}
+
+export async function getRecentlyViewed(
+  viewerUserId: string,
+  limit: number,
+  db: PrismaClient = getDb(),
+): Promise<ListingSummary[]> {
+  return viewRepo.getRecentlyViewed(db, viewerUserId, limit);
 }
 
 export async function viewListing(

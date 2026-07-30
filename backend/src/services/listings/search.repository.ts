@@ -14,8 +14,10 @@ interface SummaryRow extends Omit<ListingSummary, 'location'> {
   lng: number;
 }
 
-// First confirmed photo key per listing, for grid thumbnails.
-const coverPhotoSql = Prisma.sql`(
+// First confirmed photo key per listing, for grid thumbnails. Exported so
+// other listing-summary queries (e.g. recently-viewed) render the same
+// thumbnail rule without duplicating it.
+export const coverPhotoSql = Prisma.sql`(
   SELECT s."key"
   FROM "listingPhoto" lp
   JOIN "s3Object" s ON s.id = lp."s3ObjectId"
