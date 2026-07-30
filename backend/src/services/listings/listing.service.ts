@@ -50,6 +50,8 @@ function toDetail(core: ListingCoreRow, photos: ListingDetail['photos']): Listin
     createdAt: core.createdAt,
     updatedAt: core.updatedAt,
     photos,
+    viewCount: core.viewCount,
+    favouriteCount: core.favouriteCount,
   };
 }
 

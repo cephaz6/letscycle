@@ -29,6 +29,8 @@ export interface ListingCoreRow {
   attributes: unknown;
   createdAt: Date;
   updatedAt: Date;
+  viewCount: number;
+  favouriteCount: number;
 }
 
 export interface InsertListingParams {
@@ -78,7 +80,11 @@ export async function getCore(db: Db, id: string): Promise<ListingCoreRow | null
       ST_Y(location::geometry) AS lat,
       ST_X(location::geometry) AS lng,
       "locationAccuracyMetres", status, "deadlineAt", "publishedAt", "expiresAt",
-      attributes, "createdAt", "updatedAt"
+      attributes, "createdAt", "updatedAt",
+      (SELECT count(*)::int FROM "listingView" lv WHERE lv."listingId" = "listing".id)
+        AS "viewCount",
+      (SELECT count(*)::int FROM "favourite" f WHERE f."listingId" = "listing".id)
+        AS "favouriteCount"
     FROM "listing"
     WHERE id = ${id}::uuid
   `;

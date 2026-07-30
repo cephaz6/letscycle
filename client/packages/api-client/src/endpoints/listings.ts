@@ -56,6 +56,8 @@ export interface ListingDetail {
   createdAt: string;
   updatedAt: string;
   photos: ListingPhoto[];
+  viewCount: number;
+  favouriteCount: number;
 }
 
 export interface SearchListingsResult {

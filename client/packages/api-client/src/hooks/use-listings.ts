@@ -49,6 +49,13 @@ export function useListing(id: string) {
     queryKey: queryKeys.listings.detail(id),
     queryFn: () => listingsApi.getById(id),
     enabled: Boolean(id),
+    // The detail page shows live engagement counts (views, favourites) that
+    // change from other people's activity, not just this browser's own
+    // actions — always revalidate on mount so a restored persisted-cache
+    // snapshot (or one just sitting past staleTime) can't leave them looking
+    // frozen. The cached value still paints instantly; this only affects
+    // when the background refetch kicks off.
+    refetchOnMount: 'always',
   });
 }
 

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Heart, Lock, Pencil, Trash2 } from 'lucide-react';
 import {
   useConversations,
   useDeleteListing,
@@ -109,6 +109,17 @@ export function OwnerListingControls({ listing }: { listing: ListingDetail }) {
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-semibold">Your listing</p>
         <Badge variant={badge.variant}>{badge.label}</Badge>
+      </div>
+
+      <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <Eye className="size-4" />
+          {listing.viewCount} {listing.viewCount === 1 ? 'view' : 'views'}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Heart className="size-4" />
+          {listing.favouriteCount} {listing.favouriteCount === 1 ? 'save' : 'saves'}
+        </span>
       </div>
 
       {locked ? (
