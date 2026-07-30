@@ -11,6 +11,7 @@ import {
   updateListing,
   removeListing,
   searchListings,
+  getRecentlyViewed,
   createPhotoUpload,
   confirmPhoto,
   favouriteListing,
@@ -177,6 +178,11 @@ export function createListingRouter(deps: ListingRouterDeps): Router {
         offset: 0,
       }),
     );
+  });
+
+  // A user's own browsing history (scoped to the caller — not a public filter).
+  router.get('/recently-viewed', auth, async (req, res) => {
+    res.status(200).json(await getRecentlyViewed(requireUserId(req), 12));
   });
 
   router.get('/listings/:id', optional, async (req, res) => {

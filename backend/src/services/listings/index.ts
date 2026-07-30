@@ -5,6 +5,7 @@ export {
   updateListing,
   removeListing,
   searchListings,
+  getRecentlyViewed,
   createPhotoUpload,
   confirmPhoto,
   favouriteListing,

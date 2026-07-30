@@ -59,6 +59,20 @@ export function useListing(id: string) {
   });
 }
 
+export function useRecentlyViewed(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.recentlyViewed,
+    queryFn: () => listingsApi.listRecentlyViewed(),
+    enabled: options?.enabled ?? true,
+    staleTime: 30_000,
+    // Same reasoning as useListing's viewCount/favouriteCount: this list
+    // changes from browsing elsewhere in the same session, so a persisted or
+    // merely-not-yet-stale cache entry (e.g. the empty result from before
+    // anything had been viewed) must not be trusted at face value on mount.
+    refetchOnMount: 'always',
+  });
+}
+
 export function useFavourites(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.favourites,

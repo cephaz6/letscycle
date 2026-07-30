@@ -14,6 +14,7 @@ export const queryKeys = {
     detail: (id: string) => ['listings', 'detail', id] as const,
   },
   favourites: ['favourites'] as const,
+  recentlyViewed: ['recentlyViewed'] as const,
   wishlists: ['wishlists'] as const,
   notifications: ['notifications'] as const,
   notificationsInfinite: ['notifications', 'infinite'] as const,
